@@ -11,7 +11,6 @@ import {
     TextInput,
     View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import useFarmer from "../../../components/context/FarmerContext";
 
 const generateCaptcha = () => {
@@ -85,7 +84,6 @@ function FarmerLogin() {
             setError("Invalid OTP");
         }
         else {
-            // console.log(mobile)
             const res = await fetch(
                 `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getbeneficiarydetailsmob?kon=08&mobileno=${mobile}&year=25`,
                 { method: "GET" }
@@ -96,15 +94,12 @@ function FarmerLogin() {
                 return;
             }
 
-            // console.log(res)
-            // const parsed = JSON.parse(result);
             updateFarmer({
                 applicant_name: result[0].applicant_name,
                 swdh_name: result[0].swdh_name,
                 appl_reg_no: result[0].appl_reg_no,
                 mobile_no: mobile,
             });
-            // console.log(farmer)
             setTimeout(() => {
                 router.replace("/farmer/farmerHome");
             }, 0);
@@ -113,133 +108,121 @@ function FarmerLogin() {
 
     return (
         <ScreenLayout>
-            <SafeAreaView style={styles.safeArea}>
-                <ScrollView contentContainerStyle={styles.container}>
-                    {/* Welcome */}
-                    <Text style={styles.welcome}>WELCOME TO HARYANA</Text>
+            {/* ✅ SafeAreaView removed — ScreenLayout already handles safe area */}
+            <ScrollView contentContainerStyle={styles.container}>
+                {/* Welcome */}
+                <Text style={styles.welcome}>WELCOME TO HARYANA</Text>
 
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <Image
-                            source={require("../../../assets/images/loginlogo.png")}
-                            style={styles.logo}
-                        />
-                        <Text style={styles.headerText}>Farmer LOGIN</Text>
-                    </View>
-
-                    <View style={styles.divider} />
-
-                    {/* MFMB No */}
-                    <TextInput
-                        placeholder="Enter MFMB No (Optional)"
-                        keyboardType="number-pad"
-                        value={mfmb}
-                        onChangeText={setMfmb}
-                        style={styles.input}
+                {/* Header */}
+                <View style={styles.header}>
+                    <Image
+                        source={require("../../../assets/images/loginlogo.png")}
+                        style={styles.logo}
                     />
+                    <Text style={styles.headerText}>Farmer LOGIN</Text>
+                </View>
 
+                <View style={styles.divider} />
 
-                    {/* Mobile No */}
-                    <TextInput
-                        placeholder="Enter Registered Mobile No"
-                        keyboardType="number-pad"
-                        maxLength={10}
-                        value={mobile}
-                        onChangeText={setMobile}
-                        style={styles.input}
-                    />
+                {/* MFMB No */}
+                <TextInput
+                    placeholder="Enter MFMB No (Optional)"
+                    keyboardType="number-pad"
+                    value={mfmb}
+                    onChangeText={setMfmb}
+                    style={styles.input}
+                />
 
+                {/* Mobile No */}
+                <TextInput
+                    placeholder="Enter Registered Mobile No"
+                    keyboardType="number-pad"
+                    maxLength={10}
+                    value={mobile}
+                    onChangeText={setMobile}
+                    style={styles.input}
+                />
 
+                {/* Warning */}
+                <Text style={styles.warning}>
+                    Change Mobile No, If shown no is not Valid. Before clicking GET OTP..
+                </Text>
 
-                    {/* Warning */}
-                    <Text style={styles.warning}>
-                        Change Mobile No, If shown no is not Valid. Before clicking GET OTP..
+                {/* Get OTP */}
+                <Pressable
+                    style={[
+                        styles.primaryBtn,
+                        otpSent && { backgroundColor: "#9e9e9e" },
+                    ]}
+                    disabled={otpSent}
+                    onPress={sendOtp}
+                >
+                    <Text style={styles.btnText}>
+                        {otpSent ? "OTP Sent" : "Get OTP"}
                     </Text>
+                </Pressable>
 
-                    {/* Get OTP */}
+                {/* OTP Input */}
+                <TextInput
+                    placeholder="Enter OTP"
+                    keyboardType="number-pad"
+                    value={otp}
+                    onChangeText={setOtp}
+                    style={styles.input}
+                />
+
+                {/* OTP Info */}
+                <Text style={styles.otpInfo}>
+                    OTP Valid For 10 Minutes. Wait for SMS OTP
+                </Text>
+                <Text style={styles.otpInfo}>
+                    {sentotp}
+                </Text>
+
+                {/* CAPTCHA */}
+                <View style={styles.captchaWrapper}>
+                    <Captcha value={captcha} />
+
                     <Pressable
-                        style={[
-                            styles.primaryBtn,
-                            otpSent && { backgroundColor: "#9e9e9e" },
-                        ]}
-                        disabled={otpSent}
-                        onPress={sendOtp}
-                    >
-                        <Text style={styles.btnText}>
-                            {otpSent ? "OTP Sent" : "Get OTP"}
-                        </Text>
-                    </Pressable>
-
-
-
-                    {/* OTP Input */}
-                    <TextInput
-                        placeholder="Enter OTP"
-                        keyboardType="number-pad"
-                        value={otp}
-                        onChangeText={setOtp}
-                        style={styles.input}
-                    />
-
-
-                    {/* OTP Info */}
-                    <Text style={styles.otpInfo}>
-                        OTP Valid For 10 Minutes. Wait for SMS OTP
-                    </Text>
-                    <Text style={styles.otpInfo}>
-                        {sentotp}
-                    </Text>
-                    {/* CAPTCHA */}
-                    <View style={styles.captchaWrapper}>
-                        <Captcha value={captcha} />
-
-                        <Pressable
-                            style={styles.reloadBtn}
-                            onPress={() => {
-                                setCaptcha(generateCaptcha());
-                                setCaptchaInput("");
-                                setError("");
-                            }}
-                        >
-                            <Text style={styles.reloadText}>↻</Text>
-                        </Pressable>
-                    </View>
-
-                    <TextInput
-                        placeholder="Enter CAPTCHA"
-                        value={captchaInput}
-                        onChangeText={setCaptchaInput}
-                        style={styles.input}
-                    />
-
-                    {/* Login Button */}
-                    <Pressable
-                        style={styles.primaryBtn}
+                        style={styles.reloadBtn}
                         onPress={() => {
-                            // CAPTCHA check
-                            if (captchaInput.toUpperCase() !== captcha) {
-                                setError("Invalid CAPTCHA");
-                                return;
-                            }
-                            verifyOtp()
+                            setCaptcha(generateCaptcha());
+                            setCaptchaInput("");
+                            setError("");
                         }}
                     >
-                        <Text style={styles.btnText}>Login</Text>
+                        <Text style={styles.reloadText}>↻</Text>
                     </Pressable>
+                </View>
 
-                    {error ? <Text style={styles.errorText}>{error}</Text> : null}
-                </ScrollView>
-            </SafeAreaView>
+                <TextInput
+                    placeholder="Enter CAPTCHA"
+                    value={captchaInput}
+                    onChangeText={setCaptchaInput}
+                    style={styles.input}
+                />
+
+                {/* Login Button */}
+                <Pressable
+                    style={styles.primaryBtn}
+                    onPress={() => {
+                        if (captchaInput.toUpperCase() !== captcha) {
+                            setError("Invalid CAPTCHA");
+                            return;
+                        }
+                        verifyOtp()
+                    }}
+                >
+                    <Text style={styles.btnText}>Login</Text>
+                </Pressable>
+
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            </ScrollView>
         </ScreenLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        // backgroundColor: "#8fbc8f",
-    },
-
     container: {
         padding: 20,
         alignItems: "center",
@@ -320,6 +303,7 @@ const styles = StyleSheet.create({
         fontSize: 13,
         marginTop: 6,
     },
+
     captchaWrapper: {
         flexDirection: "row",
         alignItems: "center",
@@ -339,7 +323,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: "bold",
     },
-
 });
 
-export default FarmerLogin
+export default FarmerLogin;

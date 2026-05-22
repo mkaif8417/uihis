@@ -1,7 +1,8 @@
-import { View, StyleSheet } from "react-native";
 import { useState } from "react";
-import Header from "./Header";
+import { StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context"; // ← add this
 import Footer from "./Footer";
+import Header from "./Header";
 import Menu from "./Menu";
 
 export default function ScreenLayout({
@@ -12,8 +13,7 @@ export default function ScreenLayout({
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Header onMenuPress={() => setMenuOpen(!menuOpen)} />
 
       <Menu visible={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -21,7 +21,7 @@ export default function ScreenLayout({
       <View style={styles.content}>{children}</View>
 
       <Footer />
-    </View>
+    </SafeAreaView>
   );
 }
 

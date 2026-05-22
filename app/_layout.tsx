@@ -1,10 +1,12 @@
-import { SchemeFormProvider } from "@/components/context/SchemeFormContext";
-import { FarmerProvider } from "@/components/context/FarmerContext";
 import { ApplicationFormProvider } from "@/components/context/ApplicationFormContext";
+import { FarmerProvider } from "@/components/context/FarmerContext";
+import { SchemeFormProvider } from "@/components/context/SchemeFormContext";
 import { Stack } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context"; // ← change to SafeAreaProvider
+
 export default function RootLayout() {
   return (
+    <SafeAreaProvider> {/* ← wrap everything */}
       <FarmerProvider>
         <ApplicationFormProvider>
           <SchemeFormProvider>
@@ -12,5 +14,6 @@ export default function RootLayout() {
           </SchemeFormProvider>
         </ApplicationFormProvider>
       </FarmerProvider>
+    </SafeAreaProvider>
   );
 }

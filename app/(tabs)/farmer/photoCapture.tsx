@@ -830,15 +830,15 @@ const styles = StyleSheet.create({
   },
 
   overlayRow: {
-  position: 'absolute',
-  top: Platform.OS === 'android' ? 18 : 24,
-  left: 14,
-  right: 70, // leave space for close button
+    position: 'absolute',
+    top: Platform.OS === 'android' ? 18 : 24,
+    left: 14,
+    right: 14,
 
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-},
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
 
   gpsBox: {
     flexDirection: 'row',
@@ -869,7 +869,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: 'rgba(0,0,0,0.65)',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 14,
@@ -880,12 +880,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
   },
-closeButton: {
-  position: 'absolute',
-  top: Platform.OS === 'android' ? 18 : 24,
-  right: 14,
-  zIndex: 20,
-},
+
+  closeButton: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? 16 : 22,
+    right: 12,
+  },
 
   closeCircle: {
     width: 34,

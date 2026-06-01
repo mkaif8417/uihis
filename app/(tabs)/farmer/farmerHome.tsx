@@ -1,5 +1,6 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import useFarmer from "@/components/context/FarmerContext";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -13,8 +14,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import useFarmer from "../../../components/context/FarmerContext";
-import useSchemeForm from "../../../components/context/SchemeFormContext";
+
 
 export default function FarmerHome() {
   const heightAnim = useRef(new Animated.Value(0)).current;
@@ -24,7 +24,7 @@ export default function FarmerHome() {
   const [applicantData, setApplicantData] = useState<any>([]);
   const [flag, setFlag] = useState(false);
   const [error, setError] = useState("");
-  const { form, updateForm } = useSchemeForm();
+
   const { farmer, resetFarmer, updateFarmer } = useFarmer();
 
   const onSchemeFilingPress = () => {
@@ -60,11 +60,7 @@ export default function FarmerHome() {
           appl_reg_no: result[0].appl_reg_no,
         });
 
-        updateForm((prev: any) => ({
-          ...prev,
-          registrationId: result[0].appl_reg_no,
-        }));
-
+      
         setApplicantData(result[0]);
       } catch (err) {
         console.log(err);
@@ -253,7 +249,10 @@ export default function FarmerHome() {
             <Text style={styles.menuText}>Request to Change Mobile Number</Text>
           </Pressable>
 
-          <Pressable style={styles.menuCard}>
+          <Pressable style={styles.menuCard} 
+             onPress={() => navigate("/farmer/services/UploadDocs")}
+          >
+          
             <Text style={styles.menuText}>Upload Documents</Text>
           </Pressable>
 

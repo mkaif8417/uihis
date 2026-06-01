@@ -3,7 +3,8 @@ import Header from "@/components/Header";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  Animated, Easing,
+  Animated,
+  Easing,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,11 +16,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import useFarmer from "../../../components/context/FarmerContext";
 import useSchemeForm from "../../../components/context/SchemeFormContext";
 
-
 export default function FarmerHome() {
   const heightAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  console.log("farmer home stp rndrd")
+  const chevronAnim = useRef(new Animated.Value(0)).current;
+
   const [applicantData, setApplicantData] = useState<any>([]);
   const [flag, setFlag] = useState(false);
   const [error, setError] = useState("");
@@ -27,9 +28,7 @@ export default function FarmerHome() {
   const { farmer, resetFarmer, updateFarmer } = useFarmer();
 
   const onSchemeFilingPress = () => {
-    // console.log(applicantData[0].appl_reg_no)
-    // updateForm("registrationId", applicantData[0].appl_reg_no);
-    router.push("/(tabs)/farmer/schemeFiling/SchemeFilingHome")
+    router.push("/(tabs)/farmer/schemeFiling/SchemeFilingHome");
   };
 
   useEffect(() => {
@@ -80,27 +79,35 @@ export default function FarmerHome() {
     };
   }, []);
 
-
-
   useEffect(() => {
     Animated.parallel([
       Animated.timing(heightAnim, {
-        toValue: flag ? 200 : 0,
+        toValue: flag ? 210 : 0,
         duration: 250,
         easing: Easing.out(Easing.ease),
-        useNativeDriver: false, // height needs false
+        useNativeDriver: false,
       }),
       Animated.timing(opacityAnim, {
         toValue: flag ? 1 : 0,
         duration: 200,
         useNativeDriver: false,
       }),
+      Animated.timing(chevronAnim, {
+        toValue: flag ? 1 : 0,
+        duration: 250,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
     ]).start();
   }, [flag]);
 
-  // console.log("outside: ",form.registrationId)
+  const chevronRotate = chevronAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "180deg"],
+  });
 
   const [currentDateTime] = useState(new Date());
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-IN", {
       day: "2-digit",
@@ -126,7 +133,7 @@ export default function FarmerHome() {
     <SafeAreaView style={styles.safeArea}>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        
+
         {/* Title Bar */}
         <View style={styles.titleBar}>
           <Text style={styles.titleText}>
@@ -151,7 +158,7 @@ export default function FarmerHome() {
             style={styles.logoutBtn}
             onPress={() => {
               resetFarmer();
-              router.replace("/home")
+              router.replace("/home");
             }}
           >
             <Text style={styles.logoutText}>Log out</Text>
@@ -161,114 +168,121 @@ export default function FarmerHome() {
         {/* Menu Actions */}
         <Text style={styles.sectionTitle}>Farmer Services</Text>
 
-        <Animated.View
-          style={{
-            overflow: "hidden",
-            maxHeight: heightAnim,
-            opacity: opacityAnim,
-          }}
-        >
-          <TouchableOpacity onPress={() => navigate("/farmer/applReg/nonPrjctBsd")}>
-            <View style={styles.drpdwn}>
-              <Text style={styles.ddTxt}>Non Project based</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => navigate("/farmer/applReg/nonPrjctBsd")}>
-            <View style={styles.drpdwn}>
-              <Text style={styles.ddTxt}>Project based</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => navigate("/farmer/applReg/nonPrjctBsd")}>
-            <View style={styles.drpdwn}>
-              <Text style={styles.ddTxt}>Horticulture training schemes</Text>
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
-
         <View style={styles.menuGrid}>
 
-          <View>
-            <Pressable
-              style={styles.menuCard}
-              onPress={() => {
-                setFlag(prev => !prev);
-              }}
-            >
-
+          {/* Application Registration — same menuCard style, with chevron */}
+          <Pressable
+            style={styles.menuCard}
+            onPress={() => setFlag((prev) => !prev)}
+          >
+            <View style={styles.menuCardRow}>
               <Text style={styles.menuText}>Application Registration</Text>
-            </Pressable>
+              <Animated.Text
+                style={[styles.chevron, { transform: [{ rotate: chevronRotate }] }]}
+              >
+                ▼
+              </Animated.Text>
+            </View>
+          </Pressable>
 
-            <Pressable
-              style={styles.menuCard}
-              onPress={() => {
-                onSchemeFilingPress()
-              }}
-            >
-              <Text style={styles.menuText}>Scheme Filling / New Registration</Text>
-            </Pressable>
-            <Pressable
-              style={styles.menuCard}
-              onPress={() => {
-                navigate("/farmer/services/ApplicationAcknowledgement")
-              }}
-            >
-              <Text style={styles.menuText}>Application Acknowledgement</Text>
-            </Pressable>
-            <Pressable
-              style={styles.menuCard}
-              onPress={() => navigate("/farmer/photoCapture")}
-            >
-              <Text style={styles.menuText}>Photo Capture</Text>
-            </Pressable>
-
-
-            <Pressable
-              style={styles.menuCard}
-              onPress={() => {
-                navigate('/farmer/services/UpdateMobileNumberScreen')
-              }}
-            >
-              <Text style={styles.menuText}>Request to Change Mobile Number</Text>
-            </Pressable>
-            <Pressable
-              style={styles.menuCard}
-            // onPress={() => {
-            //   navigate('/farmer/schemeFiling/SchemeFilingHome')
-            // }}
-            >
-              <Text style={styles.menuText}>Upload Documents</Text>
-            </Pressable>
-            <Pressable
-              style={styles.menuCard}
-              onPress={() => {
-                navigate('/farmer/services/CoApplicantRegistration')
-              }}
-            >
-              <Text style={styles.menuText}>Co-Applicant / Multiple Owner Registration</Text>
-            </Pressable>
-            <Pressable
-              style={styles.menuCard}
-            onPress={() => {
-              navigate('/farmer/services/ApplicationStatus')
+          {/* Dropdown sub-items */}
+          <Animated.View
+            style={{
+              overflow: "hidden",
+              maxHeight: heightAnim,
+              opacity: opacityAnim,
             }}
+          >
+            {/* Divider */}
+            <View style={styles.subDivider} />
+
+            <TouchableOpacity
+              onPress={() => navigate("/farmer/applReg/nonPrjctBsd")}
             >
-              <Text style={styles.menuText}>Application Status</Text>
-            </Pressable>
-            <Pressable
-              style={styles.menuCard}
-            // onPress={() => {
-            //   navigate('/farmer/schemeFiling/SchemeFilingHome')
-            // }}
+              <View style={styles.subCard}>
+                <View style={styles.subDot} />
+                <Text style={styles.subText}>Non Project Based</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => navigate("/farmer/applReg/nonPrjctBsd")}
             >
-              <Text style={styles.menuText}>PB – Scheme Filling / New Registration</Text>
-            </Pressable>
-          </View>
+              <View style={styles.subCard}>
+                <View style={styles.subDot} />
+                <Text style={styles.subText}>Project Based</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => navigate("/farmer/applReg/nonPrjctBsd")}
+            >
+              <View style={[styles.subCard, { marginBottom: 10 }]}>
+                <View style={styles.subDot} />
+                <Text style={styles.subText}>Horticulture Training Schemes</Text>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Remaining menu items */}
+          <Pressable
+            style={styles.menuCard}
+            onPress={onSchemeFilingPress}
+          >
+            <Text style={styles.menuText}>Scheme Filling / New Registration</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.menuCard}
+            onPress={() => navigate("/farmer/services/ApplicationAcknowledgement")}
+          >
+            <Text style={styles.menuText}>Application Acknowledgement</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.menuCard}
+            onPress={() => navigate("/farmer/photoCapture")}
+          >
+            <Text style={styles.menuText}>Photo Capture</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.menuCard}
+            onPress={() => navigate("/farmer/services/UpdateMobileNumberScreen")}
+          >
+            <Text style={styles.menuText}>Request to Change Mobile Number</Text>
+          </Pressable>
+
+          <Pressable style={styles.menuCard}>
+            <Text style={styles.menuText}>Upload Documents</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.menuCard}
+            onPress={() => navigate("/farmer/services/CoApplicantRegistration")}
+          >
+            <Text style={styles.menuText}>
+              Co-Applicant / Multiple Owner Registration
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.menuCard}
+            onPress={() => navigate("/farmer/services/ApplicationStatus")}
+          >
+            <Text style={styles.menuText}>Application Status</Text>
+          </Pressable>
+
+          <Pressable style={styles.menuCard}>
+            <Text style={styles.menuText}>
+              PB – Scheme Filling / New Registration
+            </Text>
+          </Pressable>
         </View>
+
         <Footer />
       </ScrollView>
-    </SafeAreaView >
+    </SafeAreaView>
   );
 }
 
@@ -296,7 +310,7 @@ const styles = StyleSheet.create({
   },
 
   infoCard: {
-    backgroundColor: "#0a1d40ff",
+    backgroundColor: "#0a1d40",
     margin: 12,
     padding: 14,
     borderRadius: 8,
@@ -330,41 +344,73 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 8,
   },
-  drpdwn: {
-    backgroundColor: "#f3f7f5",   // soft green-white
-    borderLeftWidth: 4,
-    borderLeftColor: "#2f6f4e",   // govt green accent
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginHorizontal: 12,
-    marginTop: 8,
-    borderRadius: 6,
-    elevation: 2,                // Android shadow
-  },
-
-  ddTxt: {
-    fontSize: 14,
-    color: "#1f3d2b",
-    fontWeight: "500",
-  },
-
 
   menuGrid: {
     paddingHorizontal: 12,
   },
 
+  /* Shared card style — used by ALL top-level menu items */
   menuCard: {
-    backgroundColor: "#ffffff",
+    width: "100%",
+    backgroundColor: "#fff",
     padding: 14,
     borderRadius: 8,
     marginBottom: 10,
-    elevation: 1,
     borderLeftWidth: 5,
     borderLeftColor: "#7cb342",
+  },
+
+  /* Row layout inside the expandable card for chevron alignment */
+  menuCardRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 
   menuText: {
     fontSize: 15,
     color: "#1b5e20",
+    flexShrink: 1,
+  },
+
+  chevron: {
+    fontSize: 12,
+    color: "#7cb342",
+    marginLeft: 8,
+  },
+
+  /* Thin divider between parent card and sub-items */
+  subDivider: {
+    height: 1,
+    backgroundColor: "#e8f5e9",
+    marginBottom: 6,
+    marginHorizontal: 4,
+  },
+
+  /* Sub-item cards — indented, lighter green accent */
+  subCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f1f8e9",
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    marginLeft: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: "#aed581",
+    gap: 10,
+  },
+
+  subDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: "#7cb342",
+  },
+
+  subText: {
+    fontSize: 14,
+    color: "#33691e",
   },
 });

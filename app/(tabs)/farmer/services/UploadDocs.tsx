@@ -411,384 +411,70 @@ export default function UploadDocs() {
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#f4f6f5",
-  },
-  container: {
-    paddingBottom: 24,
-  },
-
-  // Title
-  titleBar: {
-    backgroundColor: "#33691e",
-    padding: 14,
-    borderRadius: 15,
-  },
-  titleText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-
-  // Registration Card
-  regCard: {
-    backgroundColor: "#0a1d40",
-    margin: 12,
-    padding: 16,
-    borderRadius: 10,
-    elevation: 3,
-  },
-  regRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 4,
-  },
-  regLabel: {
-    color: "#aed581",
-    fontSize: 13,
-    flex: 1,
-    flexShrink: 1,
-  },
-  regValue: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "600",
-    textAlign: "right",
-    flex: 1,
-  },
-  regNoBox: {
-    backgroundColor: "#1b5e20",
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: "#7cb342",
-  },
-  regNoText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "bold",
-    letterSpacing: 1,
-  },
-  dividerLine: {
-    height: 1,
-    backgroundColor: "#1e3a6e",
-    marginVertical: 6,
-  },
-  regError: {
-    color: "#ef9a9a",
-    fontSize: 14,
-  },
-
-  // Section
-  section: {
-    paddingHorizontal: 12,
-    marginTop: 4,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#1b5e20",
-    marginBottom: 10,
-  },
-
-  // Dropdown trigger
-  dropdownTrigger: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    borderLeftWidth: 5,
-    borderLeftColor: "#7cb342",
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    elevation: 1,
-    marginBottom: 4,
-  },
-  dropdownTriggerText: {
-    fontSize: 14,
-    color: "#1b5e20",
-    flex: 1,
-    paddingRight: 8,
-  },
-  dropdownChevron: {
-    fontSize: 12,
-    color: "#7cb342",
-  },
-
-  // Dropdown list
-  dropdownList: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    elevation: 4,
-    marginBottom: 12,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#e8f5e9",
-  },
-  dropdownItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 14,
-  },
-  dropdownItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f8e9",
-  },
-  dropdownItemSelected: {
-    backgroundColor: "#f1f8e9",
-  },
-  dropdownItemLeft: {
-    flex: 1,
-    paddingRight: 10,
-  },
-  dropdownItemText: {
-    fontSize: 13,
-    color: "#33691e",
-    marginTop: 4,
-  },
-  dropdownItemTextSelected: {
-    fontWeight: "600",
-  },
-  dropdownItemArea: {
-    fontSize: 12,
-    color: "#7cb342",
-    fontWeight: "600",
-  },
-  dropdownEmpty: {
-    padding: 16,
-    color: "#9e9e9e",
-    textAlign: "center",
-  },
-
-  // Scheme badge
-  schemeBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#e8f5e9",
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  schemeBadgeText: {
-    fontSize: 11,
-    color: "#2e7d32",
-    fontWeight: "700",
-  },
-
-  // Docs header
-  docsHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  progressBadge: {
-    backgroundColor: "#1b5e20",
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  progressBadgeText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-
-  // Loading / Error
-  loadingBox: {
-    alignItems: "center",
-    paddingVertical: 30,
-    gap: 10,
-  },
-  loadingText: {
-    color: "#558b2f",
-    fontSize: 14,
-  },
-  errorBox: {
-    backgroundColor: "#ffebee",
-    borderRadius: 8,
-    padding: 16,
-    alignItems: "center",
-  },
-  errorText: {
-    color: "#c62828",
-    fontSize: 14,
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  retryBtn: {
-    backgroundColor: "#c62828",
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  retryText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  emptyText: {
-    color: "#9e9e9e",
-    textAlign: "center",
-    paddingVertical: 20,
-  },
-
-  // Document card
-  docCard: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 10,
-    overflow: "hidden",
-    elevation: 1,
-  },
-  docStatusStrip: {
-    width: 5,
-  },
-  docBody: {
-    flex: 1,
-    padding: 12,
-  },
-  docNameRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    marginBottom: 8,
-  },
-  docIndex: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "#e8f5e9",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 1,
-    flexShrink: 0,
-  },
-  docIndexText: {
-    fontSize: 11,
-    color: "#2e7d32",
-    fontWeight: "700",
-  },
-  docName: {
-    fontSize: 13,
-    color: "#212121",
-    flex: 1,
-    lineHeight: 19,
-  },
-  docMetaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 6,
-    flexWrap: "wrap",
-  },
-  fileTypeBadge: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 4,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-  },
-  fileTypeBadgeText: {
-    fontSize: 11,
-    color: "#616161",
-  },
-  uploadedBadge: {
-    backgroundColor: "#e8f5e9",
-    borderRadius: 4,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-  },
-  uploadedBadgeText: {
-    fontSize: 11,
-    color: "#2e7d32",
-    fontWeight: "600",
-  },
-  uploadDate: {
-    fontSize: 11,
-    color: "#757575",
-    marginBottom: 4,
-  },
-  gpsInfo: {
-    fontSize: 11,
-    color: "#757575",
-    marginBottom: 4,
-  },
-  uploadBtn: {
-    marginTop: 6,
-    backgroundColor: "#33691e",
-    borderRadius: 6,
-    paddingVertical: 8,
-    alignItems: "center",
-  },
-  uploadBtnRe: {
-    backgroundColor: "#1565c0",
-  },
-  uploadBtnDisabled: {
-    backgroundColor: "#bdbdbd",
-  },
-  uploadBtnText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 13,
-  },
-  uploadBtnTextDisabled: {
-    color: "#eeeeee",
-  },
-  
-viewBtn: {
-  flex: 1,
-  marginTop: 0,
-  backgroundColor: "#fff",
-  borderRadius: 6,
-  paddingVertical: 8,
-  alignItems: "center",
-  borderWidth: 1.5,
-  borderColor: "#1565c0",
-},
-viewBtnDisabled: {
-  borderColor: "#bdbdbd",
-},
-viewBtnText: {
-  color: "#1565c0",
-  fontWeight: "bold",
-  fontSize: 13,
-},
-viewBtnTextDisabled: {
-  color: "#bdbdbd",
-},
-chooseBtn: {
-    backgroundColor: "#33691e",
-    borderRadius: 6,
-    paddingVertical: 8,
-    alignItems: "center",
-  },
-  chooseBtnText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 13,
-  },
-
-  uploadAllBtn: {
-    backgroundColor: "#1b5e20",
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 6,
-    marginBottom: 16,
-    elevation: 2,
-  },
-  uploadAllBtnText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    letterSpacing: 0.5,
-  },
+  safeArea: { flex: 1, backgroundColor: "#f4f6f5" },
+  container: { paddingBottom: 24 },
+  titleBar: { backgroundColor: "#33691e", padding: 14, borderRadius: 15 },
+  titleText: { color: "#fff", fontSize: 16, fontWeight: "bold", textAlign: "center" },
+  regCard: { backgroundColor: "#0a1d40", margin: 12, padding: 16, borderRadius: 10, elevation: 3 },
+  regRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 4 },
+  regLabel: { color: "#aed581", fontSize: 13, flex: 1, flexShrink: 1 },
+  regValue: { color: "#fff", fontSize: 13, fontWeight: "600", textAlign: "right", flex: 1 },
+  regNoBox: { backgroundColor: "#1b5e20", borderRadius: 6, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: "#7cb342" },
+  regNoText: { color: "#fff", fontSize: 15, fontWeight: "bold", letterSpacing: 1 },
+  dividerLine: { height: 1, backgroundColor: "#1e3a6e", marginVertical: 6 },
+  regError: { color: "#ef9a9a", fontSize: 14 },
+  section: { paddingHorizontal: 12, marginTop: 4 },
+  sectionTitle: { fontSize: 15, fontWeight: "bold", color: "#1b5e20", marginBottom: 10 },
+  dropdownTrigger: { backgroundColor: "#fff", borderRadius: 8, borderLeftWidth: 5, borderLeftColor: "#7cb342", paddingHorizontal: 14, paddingVertical: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", elevation: 1, marginBottom: 4 },
+  dropdownTriggerText: { fontSize: 14, color: "#1b5e20", flex: 1, paddingRight: 8 },
+  dropdownChevron: { fontSize: 12, color: "#7cb342" },
+  dropdownList: { backgroundColor: "#fff", borderRadius: 8, elevation: 4, marginBottom: 12, overflow: "hidden", borderWidth: 1, borderColor: "#e8f5e9" },
+  dropdownItem: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 14 },
+  dropdownItemBorder: { borderBottomWidth: 1, borderBottomColor: "#f1f8e9" },
+  dropdownItemSelected: { backgroundColor: "#f1f8e9" },
+  dropdownItemLeft: { flex: 1, paddingRight: 10 },
+  dropdownItemText: { fontSize: 13, color: "#33691e", marginTop: 4 },
+  dropdownItemTextSelected: { fontWeight: "600" },
+  dropdownItemArea: { fontSize: 12, color: "#7cb342", fontWeight: "600" },
+  dropdownEmpty: { padding: 16, color: "#9e9e9e", textAlign: "center" },
+  schemeBadge: { alignSelf: "flex-start", backgroundColor: "#e8f5e9", borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
+  schemeBadgeText: { fontSize: 11, color: "#2e7d32", fontWeight: "700" },
+  docsHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
+  progressBadge: { backgroundColor: "#1b5e20", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
+  progressBadgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+  loadingBox: { alignItems: "center", paddingVertical: 30, gap: 10 },
+  loadingText: { color: "#558b2f", fontSize: 14 },
+  errorBox: { backgroundColor: "#ffebee", borderRadius: 8, padding: 16, alignItems: "center" },
+  errorText: { color: "#c62828", fontSize: 14, marginBottom: 10, textAlign: "center" },
+  retryBtn: { backgroundColor: "#c62828", paddingHorizontal: 20, paddingVertical: 8, borderRadius: 6 },
+  retryText: { color: "#fff", fontWeight: "bold" },
+  emptyText: { color: "#9e9e9e", textAlign: "center", paddingVertical: 20 },
+  docCard: { flexDirection: "row", backgroundColor: "#fff", borderRadius: 10, marginBottom: 10, overflow: "hidden", elevation: 1 },
+  docStatusStrip: { width: 5 },
+  docBody: { flex: 1, padding: 12 },
+  docNameRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 8 },
+  docIndex: { width: 22, height: 22, borderRadius: 11, backgroundColor: "#e8f5e9", alignItems: "center", justifyContent: "center", marginTop: 1, flexShrink: 0 },
+  docIndexText: { fontSize: 11, color: "#2e7d32", fontWeight: "700" },
+  docName: { fontSize: 13, color: "#212121", flex: 1, lineHeight: 19 },
+  docMetaRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" },
+  fileTypeBadge: { backgroundColor: "#f5f5f5", borderRadius: 4, paddingHorizontal: 7, paddingVertical: 3 },
+  fileTypeBadgeText: { fontSize: 11, color: "#616161" },
+  uploadedBadge: { backgroundColor: "#e8f5e9", borderRadius: 4, paddingHorizontal: 7, paddingVertical: 3 },
+  uploadedBadgeText: { fontSize: 11, color: "#2e7d32", fontWeight: "600" },
+  uploadDate: { fontSize: 11, color: "#757575", marginBottom: 4 },
+  gpsInfo: { fontSize: 11, color: "#757575", marginBottom: 4 },
+  uploadBtn: { marginTop: 6, backgroundColor: "#33691e", borderRadius: 6, paddingVertical: 8, alignItems: "center" },
+  uploadBtnRe: { backgroundColor: "#1565c0" },
+  uploadBtnDisabled: { backgroundColor: "#bdbdbd" },
+  uploadBtnText: { color: "#fff", fontWeight: "bold", fontSize: 13 },
+  uploadBtnTextDisabled: { color: "#eeeeee" },
+  viewBtn: { flex: 1, marginTop: 0, backgroundColor: "#fff", borderRadius: 6, paddingVertical: 8, alignItems: "center", borderWidth: 1.5, borderColor: "#1565c0" },
+  viewBtnDisabled: { borderColor: "#bdbdbd" },
+  viewBtnText: { color: "#1565c0", fontWeight: "bold", fontSize: 13 },
+  viewBtnTextDisabled: { color: "#bdbdbd" },
+  chooseBtn: { backgroundColor: "#33691e", borderRadius: 6, paddingVertical: 8, alignItems: "center" },
+  chooseBtnText: { color: "#fff", fontWeight: "bold", fontSize: 13 },
+  uploadAllBtn: { backgroundColor: "#1b5e20", borderRadius: 8, paddingVertical: 14, alignItems: "center", marginTop: 6, marginBottom: 16, elevation: 2 },
+  uploadAllBtnText: { color: "#fff", fontWeight: "bold", fontSize: 16, letterSpacing: 0.5 },
 });
-

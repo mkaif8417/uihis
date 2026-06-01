@@ -1,6 +1,8 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import useFarmer from "@/components/context/FarmerContext";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -179,7 +181,106 @@ export default function UploadDocs() {
 
     const uploadedCount = docs.filter(isUploaded).length;
     const totalCount = docs.length;
+    // ---------------------------------------bkc
+    const [selectedFiles, setSelectedFiles] = useState<Record<string, {
+    uri: string;
+    name: string;
+    mimeType?: string;
+    size?: number;
+}>>({});
+const handleSelectFile = async (doc: DocumentControl) => {
+    const isImage = doc.type1?.toLowerCase().includes("image");
 
+    if (isImage) {
+        // Image picker for image-type docs
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+            Alert.alert("Permission Denied", "Allow access to your gallery to select images.");
+            return;
+        }
+
+const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['images'],
+    allowsEditing: false,
+    quality: 0.8,
+});
+        if (!result.canceled && result.assets[0]) {
+            const asset = result.assets[0];
+            // Check size (500 KB = 512000 bytes)
+            if (asset.fileSize && asset.fileSize > 512000) {
+                Alert.alert("File Too Large", "Please select an image under 500 KB.");
+                return;
+            }
+            setSelectedFiles((prev) => ({
+                ...prev,
+                [doc.fileId]: {
+                    uri: asset.uri,
+                    name: asset.fileName ?? `image_${doc.fileId}.jpg`,
+                    mimeType: asset.mimeType ?? "image/jpeg",
+                    size: asset.fileSize,
+                },
+            }));
+        }
+    } else {
+        // Document picker for PDF-type docs
+        const result = await DocumentPicker.getDocumentAsync({
+            type: "application/pdf",
+            copyToCacheDirectory: true,
+        });
+        if (!result.canceled && result.assets[0]) {
+            const asset = result.assets[0];
+            // Check size (500 KB = 512000 bytes)
+            if (asset.size && asset.size > 512000) {
+                Alert.alert("File Too Large", "Please select a PDF under 500 KB.");
+                return;
+            }
+            setSelectedFiles((prev) => ({
+                ...prev,
+                [doc.fileId]: {
+                    uri: asset.uri,
+                    name: asset.name,
+                    mimeType: asset.mimeType ?? "application/pdf",
+                    size: asset.size,
+                },
+            }));
+        }
+    }
+};
+// -------------------------bkc
+const handleUpload = async (doc: DocumentControl) => {
+    const file = selectedFiles[doc.fileId];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", {
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType ?? "application/octet-stream",
+    } as any);
+    formData.append("fileId", doc.fileId);
+    formData.append("BenRegNo", selectedComp!.appl_reg_no);
+    formData.append("kon", KON);
+
+    try {
+        const res = await fetch("YOUR_UPLOAD_API_URL_HERE", {
+            method: "POST",
+            body: formData,
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        Alert.alert("Success", `${doc.document_name.trim()} uploaded successfully!`);
+        // Clear selected file after upload
+        setSelectedFiles((prev) => {
+            const updated = { ...prev };
+            delete updated[doc.fileId];
+            return updated;
+        });
+        // Refresh docs
+        fetchDocs(selectedComp!);
+    } catch {
+        Alert.alert("Upload Failed", "Please try again.");
+    }
+};
     return (
         <SafeAreaView style={styles.safeArea}>
             <Header />
@@ -416,61 +517,58 @@ export default function UploadDocs() {
                                             )}
 
                                             {/* ── Three Action Buttons ── */}
-                                            <View style={styles.actionRow}>
-                                                {/* Select File */}
-                                                <Pressable
-                                                    style={({ pressed }) => [
-                                                        styles.actionBtn,
-                                                        styles.selectBtn,
-                                                        pressed && { opacity: 0.8 },
-                                                        currentDoc.isDisabled && styles.actionBtnDisabled,
-                                                    ]}
-                                                    disabled={currentDoc.isDisabled}
-                                                    onPress={() =>
-                                                        Alert.alert("Select File", `Choose file for:\n${currentDoc.document_name.trim()}`)
-                                                    }
-                                                >
-                                                    <Text style={[styles.actionBtnText, currentDoc.isDisabled && styles.actionBtnTextDisabled]}>
-                                                        Select File
-                                                    </Text>
-                                                </Pressable>
+                                         {/* ── Three Action Buttons ── */}
+<View style={styles.actionRow}>
+    {/* Select File */}
+    <Pressable
+        style={({ pressed }) => [
+            styles.actionBtn,
+            styles.selectBtn,
+            pressed && { opacity: 0.8 },
+            currentDoc.isDisabled && styles.actionBtnDisabled,
+        ]}
+        disabled={currentDoc.isDisabled}
+        onPress={() => handleSelectFile(currentDoc)}  // ← changed
+    >
+        <Text style={[styles.actionBtnText, currentDoc.isDisabled && styles.actionBtnTextDisabled]}>
+            Select File
+        </Text>
+    </Pressable>
 
-                                                {/* View File */}
-                                                <Pressable
-                                                    style={({ pressed }) => [
-                                                        styles.actionBtn,
-                                                        styles.viewBtn,
-                                                        pressed && { opacity: 0.8 },
-                                                        !isUploaded(currentDoc) && styles.actionBtnOutlineDisabled,
-                                                    ]}
-                                                    disabled={!isUploaded(currentDoc)}
-                                                    onPress={() =>
-                                                        Alert.alert("View File", `Viewing:\n${currentDoc.document_name.trim()}`)
-                                                    }
-                                                >
-                                                    <Text style={[styles.viewBtnText, !isUploaded(currentDoc) && styles.viewBtnTextDisabled]}>
-                                                        View File
-                                                    </Text>
-                                                </Pressable>
+    {/* View File — unchanged */}
+    ...
 
-                                                {/* Upload */}
-                                                <Pressable
-                                                    style={({ pressed }) => [
-                                                        styles.actionBtn,
-                                                        styles.uploadBtn,
-                                                        pressed && { opacity: 0.8 },
-                                                        currentDoc.isDisabled && styles.actionBtnDisabled,
-                                                    ]}
-                                                    disabled={currentDoc.isDisabled}
-                                                    onPress={() =>
-                                                        Alert.alert("Upload", `Uploading:\n${currentDoc.document_name.trim()}`)
-                                                    }
-                                                >
-                                                    <Text style={[styles.actionBtnText, currentDoc.isDisabled && styles.actionBtnTextDisabled]}>
-                                                        Upload ↑
-                                                    </Text>
-                                                </Pressable>
-                                            </View>
+    {/* Upload — update disabled logic */}
+    <Pressable
+        style={({ pressed }) => [
+            styles.actionBtn,
+            styles.uploadBtn,
+            pressed && { opacity: 0.8 },
+            (currentDoc.isDisabled || !selectedFiles[currentDoc.fileId]) && styles.actionBtnDisabled,
+        ]}
+        disabled={currentDoc.isDisabled || !selectedFiles[currentDoc.fileId]}
+        onPress={() => handleUpload(currentDoc)}
+    >
+        <Text style={[styles.actionBtnText, (currentDoc.isDisabled || !selectedFiles[currentDoc.fileId]) && styles.actionBtnTextDisabled]}>
+            Upload ↑
+        </Text>
+    </Pressable>
+</View>
+
+{/* Selected file name preview */}
+{selectedFiles[currentDoc.fileId] && (
+    <View style={styles.selectedFileRow}>
+        <Text style={styles.selectedFileIcon}>
+            {currentDoc.type1?.toLowerCase().includes("image") ? "🖼️" : "📄"}
+        </Text>
+        <Text style={styles.selectedFileName} numberOfLines={1}>
+            {selectedFiles[currentDoc.fileId].name}
+        </Text>
+        <Text style={styles.selectedFileSize}>
+            {((selectedFiles[currentDoc.fileId].size ?? 0) / 1024).toFixed(0)} KB
+        </Text>
+    </View>
+)}
                                         </View>
                                     </View>
                                 )}
@@ -656,4 +754,25 @@ const styles = StyleSheet.create({
     // Upload all
     uploadAllBtn: { backgroundColor: "#1b5e20", borderRadius: 8, paddingVertical: 14, alignItems: "center", marginTop: 6, marginBottom: 16, elevation: 2 },
     uploadAllBtnText: { color: "#fff", fontWeight: "bold", fontSize: 16, letterSpacing: 0.5 },
+    //--------------bkc
+    selectedFileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f1f8e9",
+    borderRadius: 6,
+    padding: 8,
+    marginTop: 6,
+    gap: 6,
+},
+selectedFileIcon: { fontSize: 14 },
+selectedFileName: {
+    flex: 1,
+    fontSize: 11,
+    color: "#33691e",
+    fontWeight: "600",
+},
+selectedFileSize: {
+    fontSize: 11,
+    color: "#757575",
+},
 });

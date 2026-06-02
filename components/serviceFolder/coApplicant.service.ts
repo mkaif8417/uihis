@@ -28,6 +28,6 @@
 //   });
 
 // export const submitCoApplicant = (formData: FormData) =>
-//   api.post(`/AddBenLanddetailsWithPhoto?kon=08`, formData, {
+//   api.post(`/AddBenLanddetailsWithPhoto?kon=34`, formData, {
 //     headers: { 'Content-Type': 'multipart/form-data' },
 //   });

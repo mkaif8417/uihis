@@ -37,7 +37,7 @@ export default function FarmerHome() {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getbeneficiarydetailsmob?kon=08&mobileno=${farmer.mobile_no}&year=25`
+          `https://localhost:7065/api/UIHis/getbeneficiarydetailsmob?kon=34&mobileno=${farmer.mobile_no}&year=25`
         );
 
         if (!res.ok) {

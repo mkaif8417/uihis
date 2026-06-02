@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function WelcomeScreen() {
@@ -7,20 +7,20 @@ export default function WelcomeScreen() {
     console.log("LOGCAT WORKING");
 
   return (
-      <View style={styles.container}>
-        <Text style={styles.title}>UIHIS</Text>
-        <Text style={styles.subtitle}>
-          Agriculture Information System
-        </Text>
+  <SafeAreaView style={{ flex: 1 }}>
+    <View style={styles.container}>
+      <Text style={styles.title}>UIHIS</Text>
+      <Text style={styles.subtitle}>Agriculture Information System</Text>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/home")}
-        >
-          <Text style={styles.buttonText}>Get Started</Text>
-        </TouchableOpacity>
-      </View>
-  );
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push("/home")}
+      >
+        <Text style={styles.buttonText}>Get Started</Text>
+      </TouchableOpacity>
+    </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({

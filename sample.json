@@ -16,7 +16,7 @@
     "ll_habitation_code": "1",
     "ll_mandal_code": "03",
     "ll_panchayat_code": "12",
-    "ll_state_code": "08",
+    "ll_state_code": "34",
     "ll_village_code": "014",
     "pumps": "01",
     "scheme_code": "07",
@@ -29,7 +29,7 @@
   },
 
   "ApplReg": {
-    "state_code": "08",
+    "state_code": "34",
     "district_code": "01",
     "mandal_code": "01",
     "panchayat_code": "01",

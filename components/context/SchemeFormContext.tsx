@@ -1,8 +1,8 @@
 import axios from 'axios';
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 const API = axios.create({
-  baseURL: "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis",
+  baseURL: "https://localhost:7065/api/UIHis",
 });
 
 const SchemeFormContext = createContext<any>(null);
@@ -119,7 +119,7 @@ export const SchemeFormProvider = ({ children }: any) => {
   
   const postSchemeFiling = async (payload: any) => {
     const response = await API.post(
-      `/AddScheme?kon=08`,
+      `/AddScheme?kon=34`,
       payload,
       {
         headers: {

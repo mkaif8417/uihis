@@ -1,8 +1,7 @@
 import useFarmer from "@/components/context/FarmerContext";
 import { Picker } from "@react-native-picker/picker";
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
-import { forwardRef, useImperativeHandle, useRef } from "react";
 
 /* ---------------- REQUIRED FIELDS ---------------- */
 const REQUIRED_PERSONAL_FIELDS = [
@@ -135,19 +134,19 @@ const PersonalInfo = forwardRef(function PersonalInfo({
 
         Promise.all([
             safeFetch(
-                "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getApplicantTypes?kon=08",
+                "https://localhost:7065/api/UIHis/getApplicantTypes?kon=34",
                 d => [d.type_code, d.type_name]
             ),
             safeFetch(
-                "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/GetCategories?kon=08",
+                "https://localhost:7065/api/UIHis/GetCategories?kon=34",
                 d => [d.category_code, d.category_name]
             ),
             safeFetch(
-                "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/GetCaste?kon=08",
+                "https://localhost:7065/api/UIHis/GetCaste?kon=34",
                 d => [d.caste_code, d.caste_name]
             ),
             safeFetch(
-                "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/GetEduQualification?kon=08",
+                "https://localhost:7065/api/UIHis/GetEduQualification?kon=34",
                 d => [d.qualification_code, d.qualification_name]
             ),
         ]).then(([t, c, s, q]) => {

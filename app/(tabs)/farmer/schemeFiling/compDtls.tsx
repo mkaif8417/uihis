@@ -3,14 +3,13 @@ import Header from '@/components/Header';
 import SchemeStepper from '@/components/SchemeStepper';
 import { Picker } from '@react-native-picker/picker';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { useEffect, useState } from 'react';
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert, ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import useSchemeForm from '../../../../components/context/SchemeFormContext';
 
@@ -52,7 +51,7 @@ export default function ComponentDetailsStep() {
     setComponentTypes([]);
 
     fetch(
-      `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/AdminApi/GetComponentTypesByDeptAndSch?kon=08&deptCode=${draft.department}&schCode=${draft.scheme}`
+      `https://localhost:7065/api/AdminApi/GetComponentTypesByDeptAndSch?kon=34&deptCode=${draft.department}&schCode=${draft.scheme}`
     )
       .then(res => res.json())
       .then(data => {
@@ -89,7 +88,7 @@ export default function ComponentDetailsStep() {
 
     const fetchData = () => {
       try {
-        fetch(`https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getcomponents?kon=08&component_type_code=${draft.componentType}`)
+        fetch(`https://localhost:7065/api/UIHis/getcomponents?kon=34&component_type_code=${draft.componentType}`)
           .then(res => res.json())
           .then(data => {
             if (!active) return;
@@ -128,7 +127,7 @@ export default function ComponentDetailsStep() {
 
     const fetchData = () => {
       try {
-        fetch(`https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getsubcomponents?kon=08&component_type_code=${draft.componentType}&component_code=${draft.component}`)
+        fetch(`https://localhost:7065/api/UIHis/getsubcomponents?kon=34&component_type_code=${draft.componentType}&component_code=${draft.component}`)
           .then(res => res.json())
           .then(data => {
             if (!active) return;
@@ -165,7 +164,7 @@ export default function ComponentDetailsStep() {
 
     const fetchData = () => {
       try {
-        fetch(`https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getcrops?kon=08&component_type_code=${draft.componentType}&component_code=${draft.component}&sub_component_code=${draft.subComponent}&year_code=25`)
+        fetch(`https://localhost:7065/api/UIHis/getcrops?kon=34&component_type_code=${draft.componentType}&component_code=${draft.component}&sub_component_code=${draft.subComponent}&year_code=25`)
           .then(res => res.json())
           .then(data => {
             if (!active) return;

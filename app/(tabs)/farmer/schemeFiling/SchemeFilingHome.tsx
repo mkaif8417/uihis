@@ -1,7 +1,8 @@
+import useFarmer from '@/components/context/FarmerContext';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Alert,
     ScrollView,
@@ -12,7 +13,6 @@ import {
     View,
 } from 'react-native';
 import useSchemeForm from '../../../../components/context/SchemeFormContext';
-import useFarmer from '@/components/context/FarmerContext';
 
 const steps = [
     'Component Details',
@@ -47,7 +47,7 @@ export default function SchemeFilingHome() {
     const fetchDetails = async () => {
         console.log("regNo: ", regNo)
         try {
-            await fetch(`https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getbeneficiarydetails?kon=08&appl_reg_no=${regNo}`)
+            await fetch(`https://localhost:7065/api/UIHis/getbeneficiarydetails?kon=34&appl_reg_no=${regNo}`)
                 .then(res => res.json())
                 .then(data => {
                     // console.log(data)
@@ -68,7 +68,7 @@ export default function SchemeFilingHome() {
             setLoading(true);
 
             const res = await fetch(
-                `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getbeneficiarydetails_sch?kon=08&appl_reg_no=${regNo}&year=25`
+                `https://localhost:7065/api/UIHis/getbeneficiarydetails_sch?kon=34&appl_reg_no=${regNo}&year=25`
             );
 
             const data = await res.json();

@@ -48,7 +48,7 @@ function FarmerLogin() {
 
         try {
             const res = await fetch(
-                `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getotp?userid=${mobile}`,
+                `https://localhost:7065/api/UIHis/getotp?userid=${mobile}`,
                 {
                     method: "GET",
                 }
@@ -85,7 +85,7 @@ function FarmerLogin() {
         }
         else {
             const res = await fetch(
-                `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getbeneficiarydetailsmob?kon=08&mobileno=${mobile}&year=25`,
+                `https://localhost:7065/api/UIHis/getbeneficiarydetailsmob?kon=34&mobileno=${mobile}&year=25`,
                 { method: "GET" }
             );
             const result = await res.json();

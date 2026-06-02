@@ -45,7 +45,7 @@ type DocsResponse = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const KON = "08";
+const KON = "34";
 
 function getSchemeLabel(compn: string): string {
     if (compn.startsWith("NHM") || compn.startsWith("56")) return "NHM (MIDH)";
@@ -106,7 +106,7 @@ export default function UploadDocs() {
             setErrorReg("");
             try {
                 const res = await fetch(
-                    `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getbeneficiarydetailsmob?kon=${KON}&mobileno=${farmer.mobile_no}&year=25`
+                    `https://localhost:7065/api/UIHis/getbeneficiarydetailsmob?kon=${KON}&mobileno=${farmer.mobile_no}&year=26`
                 );
                 if (!res.ok) throw new Error("Server error");
                 const result = await res.json();
@@ -130,7 +130,7 @@ export default function UploadDocs() {
         const fetchComponents = async () => {
             try {
                 const res = await fetch(
-                    `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PLch?BenRegNo=${regNo}&kon=${KON}&comp=56020126N`
+                    `https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=${regNo}&kon=${KON}`
                 );
                 if (!res.ok) throw new Error("Server error");
                 const result: DocsResponse = await res.json();
@@ -151,7 +151,7 @@ export default function UploadDocs() {
         setDocs([]);
         try {
             const res = await fetch(
-                `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PLch?BenRegNo=${comp.appl_reg_no}&kon=${KON}&comp=${comp.comp}`
+                `https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PLch?BenRegNo=${comp.appl_reg_no}&kon=${KON}&comp=${comp.comp}`
             );
             if (!res.ok) throw new Error("Server error");
             const result: DocsResponse = await res.json();

@@ -1,8 +1,6 @@
-import { View, Text, TextInput, Pressable } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
-import React, { forwardRef, useImperativeHandle, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 type LandValue = {
   totalLandArea: string;
@@ -76,7 +74,7 @@ const LandDetails = forwardRef(function LandDetails({
   /* Fetch districts */
   useEffect(() => {
     fetch(
-      "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getDistricts?kon=08&state_code=08"
+      "https://localhost:7065/api/UIHis/getDistricts?kon=34&state_code=08"
     )
       .then(res => res.json())
       .then(data =>
@@ -91,7 +89,7 @@ const LandDetails = forwardRef(function LandDetails({
     if (!local.district) return;
     setBlocks([]);
     fetch(
-      `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getMandals?kon=08&state_code=08&district_code=${local.district}`
+      `https://localhost:7065/api/UIHis/getMandals?kon=34&state_code=08&district_code=${local.district}`
     )
       .then(res => res.json())
       .then(data =>
@@ -104,7 +102,7 @@ const LandDetails = forwardRef(function LandDetails({
     if (!local.block) return;
     setPanchayats([]);
     fetch(
-      `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getPanchayats?kon=08&state_code=08&district_code=${local.district}&mandal_code=${local.block}`
+      `https://localhost:7065/api/UIHis/getPanchayats?kon=34&state_code=08&district_code=${local.district}&mandal_code=${local.block}`
     )
       .then(res => res.json())
       .then(data =>
@@ -119,7 +117,7 @@ const LandDetails = forwardRef(function LandDetails({
     if (!local.panchayat) return;
     setVillages([]);
     fetch(
-      `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getVillages?kon=08&state_code=08&district_code=${local.district}&mandal_code=${local.block}&panchayat_code=${local.panchayat}`
+      `https://localhost:7065/api/UIHis/getVillages?kon=34&state_code=08&district_code=${local.district}&mandal_code=${local.block}&panchayat_code=${local.panchayat}`
     )
       .then(res => res.json())
       .then(data =>

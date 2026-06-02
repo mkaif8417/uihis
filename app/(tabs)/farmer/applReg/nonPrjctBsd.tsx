@@ -8,12 +8,11 @@ import PersonalInfo from "@/components/PersonalInfo";
 import PhotoUpload from "@/components/PhotoUpload";
 import Review from "@/components/Review";
 import { router } from "expo-router";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import useFarmer from "../../../../components/context/FarmerContext";
 import { buildRegistrationPayload } from "../../../../components/serviceFolder/registration.service";
-import { useMemo } from "react";
 
 const steps = [
   "Personal Info",
@@ -74,7 +73,7 @@ export default function NonProjectBased() {
     console.log("POST PAYLOAD:", payload);
 
     await fetch(
-      `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/AddBeneficiary?kon=08`,
+      `https://localhost:7065/api/UIHis/AddBeneficiary?kon=34`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

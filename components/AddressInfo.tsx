@@ -1,8 +1,7 @@
-import { View, Text, TextInput, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import React, { useEffect, useState } from "react";
+import React, { forwardRef, useImperativeHandle, useRef } from "react";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 import useFarmer from "./context/FarmerContext";
-import { forwardRef, useImperativeHandle, useRef } from "react";
 
 /* ------------------ REQUIRED FIELDS ------------------ */
 const REQUIRED = [
@@ -26,7 +25,7 @@ const AddressInfo = forwardRef(function AddressInfo({
     console.log("addrs info rndrd")
     /* ------------------ LOCAL DRAFT STATE ------------------ */
     const [form, setForm] = React.useState(() => ({
-        state: "08",
+        state: "34",
         district: "",
         block: "",
         panchayat: "",
@@ -81,7 +80,7 @@ const AddressInfo = forwardRef(function AddressInfo({
     React.useEffect(() => {
         console.log("distritcs ldng")
         safeFetch(
-            "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getDistricts?kon=08&state_code=08",
+            "https://localhost:7065/api/UIHis/getDistricts?kon=34&state_code=08",
             setDistricts,
             setLoadingDistrict
         );
@@ -98,7 +97,7 @@ const AddressInfo = forwardRef(function AddressInfo({
         });
 
         safeFetch(
-            `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getMandals?kon=08&state_code=08&district_code=${form.district}`,
+            `https://localhost:7065/api/UIHis/getMandals?kon=34&state_code=08&district_code=${form.district}`,
             setBlocks,
             setLoadingBlock
         );
@@ -114,7 +113,7 @@ const AddressInfo = forwardRef(function AddressInfo({
         });
 
         safeFetch(
-            `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getPanchayats?kon=08&state_code=08&district_code=${form.district}&mandal_code=${form.block}`,
+            `https://localhost:7065/api/UIHis/getPanchayats?kon=34&state_code=08&district_code=${form.district}&mandal_code=${form.block}`,
             setPanchayats,
             setLoadingPanchayat
         );
@@ -130,7 +129,7 @@ const AddressInfo = forwardRef(function AddressInfo({
         });
 
         safeFetch(
-            `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getVillages?kon=08&state_code=08&district_code=${form.district}&mandal_code=${form.block}&panchayat_code=${form.panchayat}`,
+            `https://localhost:7065/api/UIHis/getVillages?kon=34&state_code=08&district_code=${form.district}&mandal_code=${form.block}&panchayat_code=${form.panchayat}`,
             setVillages,
             setLoadingVillage
         );

@@ -2,15 +2,15 @@ import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import PickerBox from '@/components/PickerBox';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Alert
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import useSchemeForm from '../../../../components/context/SchemeFormContext';
 import SchemeStepper from './../../../../components/SchemeStepper';
@@ -36,7 +36,7 @@ export default function LandAreaStep() {
   useEffect(() => {
     let active = true;
 
-    fetch(`https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getSourceIrrigations?kon=08`)
+    fetch(`https://localhost:7065/api/UIHis/getSourceIrrigations?kon=34`)
       .then(res => res.json())
       .then(data => {
         if (!active) return;
@@ -48,7 +48,7 @@ export default function LandAreaStep() {
         setSources([]);
       });
 
-    fetch(`https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getSoilTypes?kon=08`)
+    fetch(`https://localhost:7065/api/UIHis/getSoilTypes?kon=34`)
       .then(res => res.json())
       .then(data => {
         if (!active) return;
@@ -60,7 +60,7 @@ export default function LandAreaStep() {
         setSoilTypes([]);
       });
 
-    fetch(`https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getLandTypes?kon=08`)
+    fetch(`https://localhost:7065/api/UIHis/getLandTypes?kon=34`)
       .then(res => res.json())
       .then(data => {
         if (!active) return;

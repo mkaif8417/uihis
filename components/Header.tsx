@@ -1,4 +1,4 @@
-import { View, Image, StyleSheet, TouchableOpacity, Text } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type HeaderProps = {
   onMenuPress?: () => void;
@@ -9,7 +9,7 @@ export default function Header({ onMenuPress }: HeaderProps) {
     <View>
       {/* Header Image */}
       <Image
-        source={require("../assets/images/header-banner.jpg")}
+        source={require("../assets/images/header-banner.png")}
         style={styles.image}
         resizeMode="cover"
       />

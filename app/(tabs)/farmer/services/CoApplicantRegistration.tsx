@@ -1,25 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { Picker } from "@react-native-picker/picker";
-import { Image } from "react-native";
-import {
-    View,
-    Text,
-    TextInput,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    Alert,
-    ActivityIndicator,
-} from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import axios from "axios";
 import useFarmer from "@/components/context/FarmerContext";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { Picker } from "@react-native-picker/picker";
+import axios from "axios";
+import * as ImagePicker from "expo-image-picker";
+import { useEffect, useState } from "react";
+import {
+    ActivityIndicator, Alert, Image, ScrollView,
+    StyleSheet, Text,
+    TextInput, TouchableOpacity, View
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const API = axios.create({
-    baseURL: "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis",
+    baseURL: "https://localhost:7065/api/UIHis",
 });
 
 export default function CoApplicantRegistration() {
@@ -68,7 +62,7 @@ export default function CoApplicantRegistration() {
             setLoading(true);
             const res = await API.get("/getbeneficiarydetailsmob", {
                 params: {
-                    kon: "08",
+                    kon: "34",
                     mobileno: farmer.mobile_no,
                     year: "25",
                 },
@@ -90,7 +84,7 @@ export default function CoApplicantRegistration() {
         if (!form.appl_reg_no) return;
         try {
             setLoading(true);
-            const res = await API.get(`/getbeneficiarydetails?kon=08&appl_reg_no=${form.appl_reg_no}&year=25`);
+            const res = await API.get(`/getbeneficiarydetails?kon=34&appl_reg_no=${form.appl_reg_no}&year=25`);
 
             const d = res.data;
             // console.log(d[0])
@@ -118,25 +112,25 @@ export default function CoApplicantRegistration() {
 
     /* ---------------- BANK CASCADE ---------------- */
     const loadStates = async () => {
-        const res = await API.get("/GetStates", { params: { kon: "08" } });
+        const res = await API.get("/GetStates", { params: { kon: "34" } });
         setStates(res.data || []);
     };
 
     const loadDistricts = async (state: string) => {
         const res = await API.get("/getDistricts", {
-            params: { kon: "08", state_code: state },
+            params: { kon: "34", state_code: state },
         });
         setDistricts(res.data || []);
     };
 
     const loadBanks = async () => {
-        const res = await API.get("/getBanks", { params: { kon: "08" } });
+        const res = await API.get("/getBanks", { params: { kon: "34" } });
         setBanks(res.data || []);
     };
 
     const loadBranches = async (district: string, bank: string) => {
         const res = await API.get("/getBranches", {
-            params: { kon: "08", district, bank_code: bank },
+            params: { kon: "34", district, bank_code: bank },
         });
         setBranches(res.data || []);
     };
@@ -145,7 +139,7 @@ export default function CoApplicantRegistration() {
         try {
             const res = await API.get("/getIFSCcodes", {
                 params: {
-                    kon: "08",
+                    kon: "34",
                     bank_code: form.bank_code,
                     branch_code: form.branch_code,
                     state_code: form.bank_state,
@@ -187,7 +181,7 @@ export default function CoApplicantRegistration() {
         try {
             const res = await API.get("/getIFSCcodes", {
                 params: {
-                    kon: "08",
+                    kon: "34",
                     bank_code,
                     branch_code,
                     state_code,
@@ -264,7 +258,7 @@ export default function CoApplicantRegistration() {
             await API.post(
                 "/AddBenLanddetailsWithPhoto",
                 fd,
-                { params: { kon: "08" } }
+                { params: { kon: "34" } }
             );
 
             Alert.alert("Success", "Co-Applicant registered successfully");

@@ -1,8 +1,6 @@
-import { View, Text, TextInput } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
-import React, { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 /* Required fields (Angular parity) */
 const REQUIRED_FIELDS = [
@@ -21,7 +19,7 @@ const BankInfo = forwardRef(function BankInfo({
 }, ref) {
   /* ---------------- HOOKS FIRST ---------------- */
   const [form, setForm] = useState({
-    state: "08", // Haryana
+    state: "34", // Haryana
     district: "",
     bankName: "",
     branchName: "",
@@ -191,7 +189,7 @@ const BankInfo = forwardRef(function BankInfo({
     setDistricts([]);
     const fetchData = async () => {
       try {
-        await fetch(`https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getDistricts?kon=08&state_code=08`)
+        await fetch(`https://localhost:7065/api/UIHis/getDistricts?kon=34&state_code=08`)
           .then(res => res.json())
           .then(data => {
             // Expected: [{ code: "01", name: "District A" }]
@@ -225,7 +223,7 @@ const BankInfo = forwardRef(function BankInfo({
     const fetchIfsc = async () => {
       try {
         const res = await fetch(
-          `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getIFSCcodes?kon=08&bank_code=${form.bankName}&branch_code=${form.branchName}&state_code=08&district_code=${form.district}`,
+          `https://localhost:7065/api/UIHis/getIFSCcodes?kon=34&bank_code=${form.bankName}&branch_code=${form.branchName}&state_code=08&district_code=${form.district}`,
           {
             method: "GET",
           }
@@ -265,7 +263,7 @@ const BankInfo = forwardRef(function BankInfo({
     const fetchBranches = async () => {
       try {
         fetch(
-          `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getBranches?kon=08&district=${form.district}&bank_code=${form.bankName}`
+          `https://localhost:7065/api/UIHis/getBranches?kon=34&district=${form.district}&bank_code=${form.bankName}`
         )
           .then(res => res.json())
           .then(data => {

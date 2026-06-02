@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis", // from swagger
+  baseURL: "https://localhost:7065/api/UIHis", // from swagger
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",

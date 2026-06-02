@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import { useSchemeForm } from "@/components/context/SchemeFormContext";
+import { Picker } from "@react-native-picker/picker";
 import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 export default function LandLocationStep() {
   const { form, updateForm } = useSchemeForm();
   const [draft, setDraft] = useState(() => ({
     ...form,
     address: {
-      state: "08",
+      state: "34",
       district: "",
       mandal: "",
       panchayat: "",
@@ -57,7 +57,7 @@ export default function LandLocationStep() {
     setDistricts([]);
 
     fetch(
-      "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getDistricts?kon=08&state_code=08"
+      "https://localhost:7065/api/UIHis/getDistricts?kon=34&state_code=08"
     )
       .then(res => res.json())
       .then(data => {
@@ -102,7 +102,7 @@ export default function LandLocationStep() {
 
 
     fetch(
-      `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getMandals?kon=08&state_code=08&district_code=${draft.address.district}`
+      `https://localhost:7065/api/UIHis/getMandals?kon=34&state_code=08&district_code=${draft.address.district}`
     )
       .then(res => res.json())
       .then(data => {
@@ -144,7 +144,7 @@ export default function LandLocationStep() {
 
 
     fetch(
-      `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getPanchayats?kon=08&state_code=08&district_code=${draft.address.district}&mandal_code=${draft.address.mandal}`
+      `https://localhost:7065/api/UIHis/getPanchayats?kon=34&state_code=08&district_code=${draft.address.district}&mandal_code=${draft.address.mandal}`
     )
       .then(res => res.json())
       .then(data => {
@@ -183,7 +183,7 @@ export default function LandLocationStep() {
 
 
     fetch(
-      `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getVillages?kon=08&state_code=08&district_code=${draft.address.district}&mandal_code=${draft.address.mandal}&panchayat_code=${draft.address.panchayat}`
+      `https://localhost:7065/api/UIHis/getVillages?kon=34&state_code=08&district_code=${draft.address.district}&mandal_code=${draft.address.mandal}&panchayat_code=${draft.address.panchayat}`
     )
       .then(res => res.json())
       .then(data => {

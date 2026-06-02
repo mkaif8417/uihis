@@ -1,9 +1,8 @@
 import Captcha from "@/components/Captcha";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import { generateAcknowledgementPDF } from "@/utils/ackPdf";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     ScrollView,
     StyleSheet,
@@ -88,10 +87,10 @@ export default function ApplicationAcknowledgement() {
             try {
                 const [typeData, catData] = await Promise.all([
                     safeJsonFetch(
-                        "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getApplicantTypes?kon=08"
+                        "https://localhost:7065/api/UIHis/getApplicantTypes?kon=34"
                     ),
                     safeJsonFetch(
-                        "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/GetCategories?kon=08"
+                        "https://localhost:7065/api/UIHis/GetCategories?kon=34"
                     ),
                 ]);
 
@@ -133,7 +132,7 @@ export default function ApplicationAcknowledgement() {
             setApiError("");
 
             const res = await fetch(
-                `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getbeneficiarydetails_schst?kon=08&appl_reg_no=U250801010025&year=25`
+                `https://localhost:7065/api/UIHis/getbeneficiarydetails_schst?kon=34&appl_reg_no=U250801010025&year=25`
             );
 
             const data = await res.json();

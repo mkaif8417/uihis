@@ -1,12 +1,12 @@
-import { api } from "./api";
 import { SubmitApplicationRequest } from "@/types/SubmitApplicationRequest";
+import { api } from "./api";
 
 export const submitApplication = async (
   payload: SubmitApplicationRequest
 ) => {
   try {
     const response = await api.post(
-      "/AddBeneficiary?kon=08",
+      "/AddBeneficiary?kon=34",
       payload
     );
 

@@ -284,132 +284,23 @@ export default function FarmerHome() {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#f4f6f5",
-  },
-
-  container: {
-    paddingBottom: 20,
-  },
-
-  titleBar: {
-    borderRadius: 15,
-    backgroundColor: "#33691e",
-    padding: 14,
-  },
-
-  titleText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-
-  infoCard: {
-    backgroundColor: "#0a1d40",
-    margin: 12,
-    padding: 14,
-    borderRadius: 8,
-    elevation: 2,
-  },
-
-  infoText: {
-    fontSize: 14,
-    marginBottom: 4,
-    color: "#fff",
-  },
-
-  logoutBtn: {
-    marginTop: 10,
-    backgroundColor: "#c62828",
-    paddingVertical: 8,
-    borderRadius: 6,
-    alignItems: "center",
-  },
-
-  logoutText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1b5e20",
-    marginLeft: 12,
-    marginTop: 10,
-    marginBottom: 8,
-  },
-
-  menuGrid: {
-    paddingHorizontal: 12,
-  },
-
-  /* Shared card style — used by ALL top-level menu items */
-  menuCard: {
-    width: "100%",
-    backgroundColor: "#fff",
-    padding: 14,
-    borderRadius: 8,
-    marginBottom: 10,
-    borderLeftWidth: 5,
-    borderLeftColor: "#7cb342",
-  },
-
-  /* Row layout inside the expandable card for chevron alignment */
-  menuCardRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-
-  menuText: {
-    fontSize: 15,
-    color: "#1b5e20",
-    flexShrink: 1,
-  },
-
-  chevron: {
-    fontSize: 12,
-    color: "#7cb342",
-    marginLeft: 8,
-  },
-
-  /* Thin divider between parent card and sub-items */
-  subDivider: {
-    height: 1,
-    backgroundColor: "#e8f5e9",
-    marginBottom: 6,
-    marginHorizontal: 4,
-  },
-
-  /* Sub-item cards — indented, lighter green accent */
-  subCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f1f8e9",
-    paddingVertical: 11,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-    marginLeft: 10,
-    borderLeftWidth: 4,
-    borderLeftColor: "#aed581",
-    gap: 10,
-  },
-
-  subDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: "#7cb342",
-  },
-
-  subText: {
-    fontSize: 14,
-    color: "#33691e",
-  },
+  safeArea: { flex: 1, backgroundColor: "#f4f6f5" },
+  container: { paddingBottom: 20 },
+  titleBar: { borderRadius: 15, backgroundColor: "#33691e", padding: 14 },
+  titleText: { color: "#fff", fontSize: 16, fontWeight: "bold", textAlign: "center" },
+  infoCard: { backgroundColor: "#0a1d40", margin: 12, padding: 14, borderRadius: 8, elevation: 2 },
+  infoText: { fontSize: 14, marginBottom: 4, color: "#fff" },
+  logoutBtn: { marginTop: 10, backgroundColor: "#c62828", paddingVertical: 8, borderRadius: 6, alignItems: "center" },
+  logoutText: { color: "#fff", fontWeight: "bold" },
+  sectionTitle: { fontSize: 16, fontWeight: "bold", color: "#1b5e20", marginLeft: 12, marginTop: 10, marginBottom: 8 },
+  menuGrid: { paddingHorizontal: 12 },
+  menuCard: { width: "100%", backgroundColor: "#fff", padding: 14, borderRadius: 8, marginBottom: 10, borderLeftWidth: 5, borderLeftColor: "#7cb342" },
+  menuCardRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  menuText: { fontSize: 15, color: "#1b5e20", flexShrink: 1 },
+  chevron: { fontSize: 12, color: "#7cb342", marginLeft: 8 },
+  subDivider: { height: 1, backgroundColor: "#e8f5e9", marginBottom: 6, marginHorizontal: 4 },
+  subCard: { flexDirection: "row", alignItems: "center", backgroundColor: "#f1f8e9", paddingVertical: 11, paddingHorizontal: 16, borderRadius: 8, marginBottom: 8, marginLeft: 10, borderLeftWidth: 4, borderLeftColor: "#aed581", gap: 10 },
+  subDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#7cb342" },
+  subText: { fontSize: 14, color: "#33691e" },
 });

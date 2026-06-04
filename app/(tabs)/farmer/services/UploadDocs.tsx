@@ -110,13 +110,13 @@ export default function UploadDocs() {
                     // `https:/hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getbeneficiarydetailsmob?kon=${KON}&mobileno=${farmer.mobile_no}&year=25`
                     `https://localhost:7065/api/UIHis/getbeneficiarydetailsmob?kon=${KON}&mobileno=${farmer.mobile_no}&year=26`,
 
-                 {
-        headers: {
-            "Authorization": "Bearer YOUR_TOKEN_HERE",
-        }
-    }
+                    {
+                        headers: {
+                            "Authorization": "Bearer YOUR_TOKEN_HERE",
+                        }
+                    }
 
-                    
+
                 );
                 if (!res.ok) throw new Error("Server error");
                 const result = await res.json();
@@ -143,13 +143,13 @@ export default function UploadDocs() {
                     // originally from Horti API, but using localhost for development/testing:
                     // `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=${regNo}&kon=${KON}`
                     `https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=${regNo}&kon=${KON}`
-                        // https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=N243401010001&kon=34
-                        //    https://localhost:7065/api/
-            
+                    // https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=N243401010001&kon=34
+                    //    https://localhost:7065/api/
+
                 );
                 if (!res.ok) throw new Error("Server error");
                 const result: DocsResponse = await res.json();
-                console.log("API Response:", JSON.stringify(result)); 
+                console.log("API Response:", JSON.stringify(result));
                 setComponents(result.data ?? []);
                 setFinYear(result.finYear ?? "");
                 setApplicantName(result.applicantname ?? "");
@@ -171,7 +171,7 @@ export default function UploadDocs() {
 
                 // `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PLch?BenRegNo=${comp.appl_reg_no}&kon=${KON}&comp=${comp.comp}`
                 `https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PLch?BenRegNo=${comp.appl_reg_no}&kon=${KON}&comp=${comp.comp}`
-             
+
             );
             if (!res.ok) throw new Error("Server error");
             const result: DocsResponse = await res.json();
@@ -198,123 +198,134 @@ export default function UploadDocs() {
     const handleNext = () => {
         if (selectedDocIndex < docs.length - 1) setSelectedDocIndex((i) => i + 1);
     };
+    const [selectedFiles, setSelectedFiles] = useState<Record<string, {
+        uri: string;
+        name: string;
+        mimeType?: string;
+        size?: number;
+    }>>({});
 
     const uploadedCount = docs.filter(isUploaded).length;
+    const selectedCount = docs.filter(doc => selectedFiles[doc.fileId]).length;
+
     const totalCount = docs.length;
-    // ---------------------------------------bkc
-    const [selectedFiles, setSelectedFiles] = useState<Record<string, {
-    uri: string;
-    name: string;
-    mimeType?: string;
-    size?: number;
-}>>({});
-const handleSelectFile = async (doc: DocumentControl) => {
-    const isImage = doc.type1?.toLowerCase().includes("image");
 
-    if (isImage) {
-        // Image picker for image-type docs
-        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permission.granted) {
-            Alert.alert("Permission Denied", "Allow access to your gallery to select images.");
-            return;
-        }
-
-const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ['images'],
-    allowsEditing: false,
-    quality: 0.8,
-});
-        if (!result.canceled && result.assets[0]) {
-            const asset = result.assets[0];
-            // Check size (500 KB = 512000 bytes)
-            if (asset.fileSize && asset.fileSize > 512000) {
-                Alert.alert("File Too Large", "Please select an image under 500 KB.");
-                return;
-            }
-            setSelectedFiles((prev) => ({
-                ...prev,
-                [doc.fileId]: {
-                    uri: asset.uri,
-                    name: asset.fileName ?? `image_${doc.fileId}.jpg`,
-                    mimeType: asset.mimeType ?? "image/jpeg",
-                    size: asset.fileSize,
-                },
-            }));
-        }
-    } else {
-        // Document picker for PDF-type docs
-        const result = await DocumentPicker.getDocumentAsync({
-            type: "application/pdf",
-            copyToCacheDirectory: true,
-        });
-        if (!result.canceled && result.assets[0]) {
-            const asset = result.assets[0];
-            // Check size (500 KB = 512000 bytes)
-            if (asset.size && asset.size > 512000) {
-                Alert.alert("File Too Large", "Please select a PDF under 500 KB.");
-                return;
-            }
-            setSelectedFiles((prev) => ({
-                ...prev,
-                [doc.fileId]: {
-                    uri: asset.uri,
-                    name: asset.name,
-                    mimeType: asset.mimeType ?? "application/pdf",
-                    size: asset.size,
-                },
-            }));
-        }
-    }
-};
-// -------------------------bkc
-const handleUpload = async (doc: DocumentControl) => {
-    const file = selectedFiles[doc.fileId];
-    if (!file) return;
- console.log("=== UPLOAD READY ===");
-    console.log("Document:", doc.document_name);
-    console.log("FileId:", doc.fileId);
-    console.log("File:", file.name);
-    console.log("Size:", ((file.size ?? 0)/1024).toFixed(0), "KB");
-    console.log("BenRegNo:", selectedComp?.appl_reg_no);
-    console.log("KON:", KON);
-    console.log("====================");
-
- Alert.alert(
-        "Upload Ready ✅",
-        `File selected and ready.\nWaiting for upload API from senior.`
+    const allDocsHaveFiles = docs.every(
+        doc => isUploaded(doc) || selectedFiles[doc.fileId]
     );
 
+    const missingDocs = docs.filter(
+        doc => !isUploaded(doc) && !selectedFiles[doc.fileId]
+    );
+    // ---------------------------------------bkc
 
-    const formData = new FormData();
-    formData.append("file", {
-        uri: file.uri,
-        name: file.name,
-        type: file.mimeType ?? "application/octet-stream",
-    } as any);
-    formData.append("fileId", doc.fileId);
-    formData.append("BenRegNo", selectedComp!.appl_reg_no);
-    formData.append("kon", KON);
+    const handleSelectFile = async (doc: DocumentControl) => {
+        const isImage = doc.type1?.toLowerCase().includes("image");
 
-    try {
-        const res = await fetch("YOUR_UPLOAD_API_URL_HERE", {
-            method: "POST",
-            body: formData,
-            headers: { "Content-Type": "multipart/form-data" },
-        });
-        if (!res.ok) throw new Error("Upload failed");
-        Alert.alert("Success", `${doc.document_name.trim()} uploaded successfully!`);
-        // Clear selected file after upload
-        setSelectedFiles((prev) => {
-            const updated = { ...prev };
-            delete updated[doc.fileId];
-            return updated;
-        });
-        // Refresh docs
-        fetchDocs(selectedComp!);
-    } catch {
-        Alert.alert("Upload Failed", "Please try again.");
-    }
-};
+        if (isImage) {
+            // Image picker for image-type docs
+            const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permission.granted) {
+                Alert.alert("Permission Denied", "Allow access to your gallery to select images.");
+                return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: false,
+                quality: 0.8,
+            });
+            if (!result.canceled && result.assets[0]) {
+                const asset = result.assets[0];
+                // Check size (500 KB = 512000 bytes)
+                if (asset.fileSize && asset.fileSize > 512000) {
+                    Alert.alert("File Too Large ❌",
+                        `${asset.fileName} is ${((asset.fileSize) / 1024).toFixed(0)} KB.\nMaximum allowed size is 500 KB.`);
+                    return;
+                }
+                setSelectedFiles((prev) => ({
+                    ...prev,
+                    [doc.fileId]: {
+                        uri: asset.uri,
+                        name: asset.fileName ?? `image_${doc.fileId}.jpg`,
+                        mimeType: asset.mimeType ?? "image/jpeg",
+                        size: asset.fileSize,
+                    },
+                }));
+            }
+        } else {
+            // Document picker for PDF-type docs
+            const result = await DocumentPicker.getDocumentAsync({
+                type: "application/pdf",
+                copyToCacheDirectory: true,
+            });
+            if (!result.canceled && result.assets[0]) {
+                const asset = result.assets[0];
+                // Check size (500 KB = 512000 bytes)
+                if (asset.size && asset.size > 512000) {
+                    Alert.alert("File Too Large ❌",
+                        `${asset.name} is ${((asset.size) / 1024).toFixed(0)} KB.\nMaximum allowed size is 500 KB.`);
+                    return;
+                }
+                setSelectedFiles((prev) => ({
+                    ...prev,
+                    [doc.fileId]: {
+                        uri: asset.uri,
+                        name: asset.name,
+                        mimeType: asset.mimeType ?? "application/pdf",
+                        size: asset.size,
+                    },
+                }));
+            }
+        }
+    };
+    // -------------------------bkc
+    const handleUpload = async (doc: DocumentControl) => {
+        const file = selectedFiles[doc.fileId];
+        if (!file) return;
+
+        console.log("=== UPLOAD READY ===");
+        console.log("Document:", doc.document_name);
+        console.log("FileId:", doc.fileId);
+        console.log("File:", file.name);
+        console.log("Size:", ((file.size ?? 0) / 1024).toFixed(0), "KB");
+        console.log("BenRegNo:", selectedComp?.appl_reg_no);
+        console.log("KON:", KON);
+        console.log("====================");
+
+        Alert.alert("Upload Ready ✅", "Waiting for upload API from senior.");
+
+
+        //     const formData = new FormData();
+        //     formData.append("file", {
+        //         uri: file.uri,
+        //         name: file.name,
+        //         type: file.mimeType ?? "application/octet-stream",
+        //     } as any);
+        //     formData.append("fileId", doc.fileId);
+        //     formData.append("BenRegNo", selectedComp!.appl_reg_no);
+        //     formData.append("kon", KON);
+
+        //     try {
+        //         const res = await fetch("YOUR_UPLOAD_API_URL_HERE", {
+        //             method: "POST",
+        //             body: formData,
+        //             headers: { "Content-Type": "multipart/form-data" },
+        //         });
+        //         if (!res.ok) throw new Error("Upload failed");
+        //         Alert.alert("Success", `${doc.document_name.trim()} uploaded successfully!`);
+        //         // Clear selected file after upload
+        //         setSelectedFiles((prev) => {
+        //             const updated = { ...prev };
+        //             delete updated[doc.fileId];
+        //             return updated;
+        //         });
+        //         // Refresh docs
+        //         fetchDocs(selectedComp!);
+        //     } catch {
+        //         Alert.alert("Upload Failed", "Please try again.");
+        //     }
+    };
     return (
         <SafeAreaView style={styles.safeArea}>
             <Header />
@@ -426,7 +437,9 @@ const handleUpload = async (doc: DocumentControl) => {
                             <Text style={styles.sectionTitle}>Required Documents</Text>
                             {totalCount > 0 && (
                                 <View style={styles.progressBadge}>
-                                    <Text style={styles.progressBadgeText}>{uploadedCount}/{totalCount} uploaded</Text>
+                                    <Text style={styles.progressBadgeText}>
+                                        {selectedCount}/{totalCount} selected
+                                    </Text>
                                 </View>
                             )}
                         </View>
@@ -457,7 +470,13 @@ const handleUpload = async (doc: DocumentControl) => {
                                         {currentDoc && (
                                             <View style={[
                                                 styles.docStatusDot,
-                                                { backgroundColor: isUploaded(currentDoc) ? "#87bc4e" : "#e0e0e0" }
+                                                {
+                                                    backgroundColor: isUploaded(currentDoc)
+                                                        ? "#7cb342"  // green — uploaded to server
+                                                        : selectedFiles[currentDoc.fileId]
+                                                            ? "#FFA500"  // orange — file selected but not uploaded
+                                                            : "#e0e0e0"  // grey — nothing
+                                                }
                                             ]} />
                                         )}
                                         <Text style={styles.docDropdownTriggerText} numberOfLines={2}>
@@ -490,7 +509,14 @@ const handleUpload = async (doc: DocumentControl) => {
                                                 >
                                                     <View style={[
                                                         styles.docStatusDot,
-                                                        { backgroundColor: uploaded ? "#7cb342" : "#e0e0e0", marginTop: 2 }
+                                                        {
+                                                            backgroundColor: uploaded
+                                                                ? "#7cb342"
+                                                                : selectedFiles[doc.fileId]
+                                                                    ? "#FFA500"
+                                                                    : "#e0e0e0",
+                                                            marginTop: 2
+                                                        }
                                                     ]} />
                                                     <View style={{ flex: 1 }}>
                                                         <Text style={[styles.docDropdownItemText, isSelected && styles.dropdownItemTextSelected]} numberOfLines={2}>
@@ -550,55 +576,56 @@ const handleUpload = async (doc: DocumentControl) => {
                                                 </Text>
                                             )}
 
+
                                             {/* ── Three Action Buttons ── */}
-                                         {/* ── Three Action Buttons ── */}
-{/* View File — remove the ... placeholder */}
-<View style={styles.actionRow}>
-    <Pressable
-        style={({ pressed }) => [
-            styles.actionBtn,
-            styles.selectBtn,
-            pressed && { opacity: 0.8 },
-            currentDoc.isDisabled && styles.actionBtnDisabled,
-        ]}
-        disabled={currentDoc.isDisabled}
-        onPress={() => handleSelectFile(currentDoc)}
-    >
-        <Text style={[styles.actionBtnText, currentDoc.isDisabled && styles.actionBtnTextDisabled]}>
-            Select File
-        </Text>
-    </Pressable>
+                                            {/* View File — remove the ... placeholder */}
+                                            <View style={styles.actionRow}>
+                                                <Pressable
+                                                    style={({ pressed }) => [
+                                                        styles.actionBtn,
+                                                        styles.selectBtn,
+                                                        pressed && { opacity: 0.8 },
+                                                        currentDoc.isDisabled && styles.actionBtnDisabled,
+                                                    ]}
+                                                    disabled={currentDoc.isDisabled}
+                                                    onPress={() => handleSelectFile(currentDoc)}
+                                                >
+                                                    <Text style={[styles.actionBtnText, currentDoc.isDisabled && styles.actionBtnTextDisabled]}>
+                                                        Select File
+                                                    </Text>
+                                                </Pressable>
 
-    <Pressable
-        style={({ pressed }) => [
-            styles.actionBtn,
-            styles.uploadBtn,
-            pressed && { opacity: 0.8 },
-            (currentDoc.isDisabled || !selectedFiles[currentDoc.fileId]) && styles.actionBtnDisabled,
-        ]}
-        disabled={currentDoc.isDisabled || !selectedFiles[currentDoc.fileId]}
-        onPress={() => handleUpload(currentDoc)}
-    >
-        <Text style={[styles.actionBtnText, (currentDoc.isDisabled || !selectedFiles[currentDoc.fileId]) && styles.actionBtnTextDisabled]}>
-            Upload ↑
-        </Text>
-    </Pressable>
-</View>
+                                                <Pressable
+                                                    style={({ pressed }) => [
+                                                        styles.actionBtn,
+                                                        styles.uploadBtn,
+                                                        pressed && { opacity: 0.8 },
+                                                        (currentDoc.isDisabled || !selectedFiles[currentDoc.fileId]) && styles.actionBtnDisabled,
+                                                    ]}
+                                                    disabled={currentDoc.isDisabled || !selectedFiles[currentDoc.fileId]}
+                                                    onPress={() => handleUpload(currentDoc)}
+                                                >
+                                                    <Text style={[styles.actionBtnText, (currentDoc.isDisabled || !selectedFiles[currentDoc.fileId]) && styles.actionBtnTextDisabled]}>
+                                                        Upload ↑
+                                                    </Text>
+                                                </Pressable>
+                                            </View>
 
-{/* Selected file name preview */}
-{selectedFiles[currentDoc.fileId] && (
-    <View style={styles.selectedFileRow}>
-        <Text style={styles.selectedFileIcon}>
-            {currentDoc.type1?.toLowerCase().includes("image") ? "🖼️" : "📄"}
-        </Text>
-        <Text style={styles.selectedFileName} numberOfLines={1}>
-            {selectedFiles[currentDoc.fileId].name}
-        </Text>
-        <Text style={styles.selectedFileSize}>
-            {((selectedFiles[currentDoc.fileId].size ?? 0) / 1024).toFixed(0)} KB
-        </Text>
-    </View>
-)}
+                                            {/* Selected file name preview */}
+                                            {selectedFiles[currentDoc.fileId] && (
+                                                <View style={styles.selectedFileRow}>
+                                                    <Text style={styles.selectedFileIcon}>
+                                                        {currentDoc.type1?.toLowerCase().includes("image") ? "🖼️" : "📄"}
+                                                    </Text>
+                                                    <Text style={styles.selectedFileName} numberOfLines={1}>
+                                                        {selectedFiles[currentDoc.fileId].name}
+                                                    </Text>
+                                                    <Text style={styles.selectedFileSize}>
+                                                        {((selectedFiles[currentDoc.fileId].size ?? 0) / 1024).toFixed(0)} KB
+                                                    </Text>
+                                                </View>
+
+                                            )}
                                         </View>
                                     </View>
                                 )}
@@ -659,12 +686,34 @@ const handleUpload = async (doc: DocumentControl) => {
                                     Document {selectedDocIndex + 1} of {docs.length}
                                 </Text>
 
-                                {/* ── Upload All Button ── */}
+                                {/* ── Upload All Files ── */}
                                 <Pressable
-                                    style={({ pressed }) => [styles.uploadAllBtn, pressed && { opacity: 0.85 }]}
-                                    onPress={() => Alert.alert("Upload Files", "Uploading all selected documents...")}
+                                    style={({ pressed }) => [
+                                        styles.uploadAllBtn,
+                                        !allDocsHaveFiles && styles.actionBtnDisabled,
+                                        pressed && allDocsHaveFiles && { opacity: 0.85 },
+                                    ]}
+                                    disabled={!allDocsHaveFiles}
+                                    onPress={() => {
+                                        if (missingDocs.length > 0) {
+                                            Alert.alert(
+                                                "Missing Files ❌",
+                                                `Please select files for:\n${missingDocs.map(d => `• ${d.document_name.trim()}`).join("\n")}`
+                                            );
+                                        } else {
+                                            Alert.alert(
+                                                "All Files Ready ✅",
+                                                "All documents selected. Waiting for upload API from senior."
+                                            );
+                                        }
+                                    }}
                                 >
-                                    <Text style={styles.uploadAllBtnText}>Upload All Files</Text>
+                                    <Text style={[
+                                        styles.uploadAllBtnText,
+                                        !allDocsHaveFiles && { color: "#eeeeee" }
+                                    ]}>
+                                        Upload All Files
+                                    </Text>
                                 </Pressable>
                             </>
                         )}
@@ -786,23 +835,23 @@ const styles = StyleSheet.create({
     uploadAllBtnText: { color: "#fff", fontWeight: "bold", fontSize: 16, letterSpacing: 0.5 },
     //--------------bkc
     selectedFileRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f1f8e9",
-    borderRadius: 6,
-    padding: 8,
-    marginTop: 6,
-    gap: 6,
-},
-selectedFileIcon: { fontSize: 14 },
-selectedFileName: {
-    flex: 1,
-    fontSize: 11,
-    color: "#33691e",
-    fontWeight: "600",
-},
-selectedFileSize: {
-    fontSize: 11,
-    color: "#757575",
-},
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#f1f8e9",
+        borderRadius: 6,
+        padding: 8,
+        marginTop: 6,
+        gap: 6,
+    },
+    selectedFileIcon: { fontSize: 14 },
+    selectedFileName: {
+        flex: 1,
+        fontSize: 11,
+        color: "#33691e",
+        fontWeight: "600",
+    },
+    selectedFileSize: {
+        fontSize: 11,
+        color: "#757575",
+    },
 });

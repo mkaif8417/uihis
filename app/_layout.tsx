@@ -10,6 +10,7 @@ export default function RootLayout() {
       <FarmerProvider>
         <ApplicationFormProvider>
           <SchemeFormProvider>
+    
             <Stack screenOptions={{ headerShown: false }} />
           </SchemeFormProvider>
         </ApplicationFormProvider>

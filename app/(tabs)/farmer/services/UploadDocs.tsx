@@ -457,7 +457,7 @@ const handleUpload = async (doc: DocumentControl) => {
                                         {currentDoc && (
                                             <View style={[
                                                 styles.docStatusDot,
-                                                { backgroundColor: isUploaded(currentDoc) ? "#7cb342" : "#e0e0e0" }
+                                                { backgroundColor: isUploaded(currentDoc) ? "#87bc4e" : "#e0e0e0" }
                                             ]} />
                                         )}
                                         <Text style={styles.docDropdownTriggerText} numberOfLines={2}>

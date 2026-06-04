@@ -106,7 +106,17 @@ export default function UploadDocs() {
             setErrorReg("");
             try {
                 const res = await fetch(
-                    `https://localhost:7065/api/UIHis/getbeneficiarydetailsmob?kon=${KON}&mobileno=${farmer.mobile_no}&year=26`
+                    // originally from Horti API, but using localhost for development/testing:
+                    // `https:/hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/getbeneficiarydetailsmob?kon=${KON}&mobileno=${farmer.mobile_no}&year=25`
+                    `https://localhost:7065/api/UIHis/getbeneficiarydetailsmob?kon=${KON}&mobileno=${farmer.mobile_no}&year=26`,
+
+                 {
+        headers: {
+            "Authorization": "Bearer YOUR_TOKEN_HERE",
+        }
+    }
+
+                    
                 );
                 if (!res.ok) throw new Error("Server error");
                 const result = await res.json();
@@ -130,10 +140,16 @@ export default function UploadDocs() {
         const fetchComponents = async () => {
             try {
                 const res = await fetch(
+                    // originally from Horti API, but using localhost for development/testing:
+                    // `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=${regNo}&kon=${KON}`
                     `https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=${regNo}&kon=${KON}`
+                        // https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=N243401010001&kon=34
+                        //    https://localhost:7065/api/
+            
                 );
                 if (!res.ok) throw new Error("Server error");
                 const result: DocsResponse = await res.json();
+                console.log("API Response:", JSON.stringify(result)); 
                 setComponents(result.data ?? []);
                 setFinYear(result.finYear ?? "");
                 setApplicantName(result.applicantname ?? "");
@@ -151,7 +167,11 @@ export default function UploadDocs() {
         setDocs([]);
         try {
             const res = await fetch(
+                // originally from Horti API, but using localhost for development/testing:
+
+                // `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PLch?BenRegNo=${comp.appl_reg_no}&kon=${KON}&comp=${comp.comp}`
                 `https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PLch?BenRegNo=${comp.appl_reg_no}&kon=${KON}&comp=${comp.comp}`
+             
             );
             if (!res.ok) throw new Error("Server error");
             const result: DocsResponse = await res.json();
@@ -250,6 +270,20 @@ const result = await ImagePicker.launchImageLibraryAsync({
 const handleUpload = async (doc: DocumentControl) => {
     const file = selectedFiles[doc.fileId];
     if (!file) return;
+ console.log("=== UPLOAD READY ===");
+    console.log("Document:", doc.document_name);
+    console.log("FileId:", doc.fileId);
+    console.log("File:", file.name);
+    console.log("Size:", ((file.size ?? 0)/1024).toFixed(0), "KB");
+    console.log("BenRegNo:", selectedComp?.appl_reg_no);
+    console.log("KON:", KON);
+    console.log("====================");
+
+ Alert.alert(
+        "Upload Ready ✅",
+        `File selected and ready.\nWaiting for upload API from senior.`
+    );
+
 
     const formData = new FormData();
     formData.append("file", {
@@ -518,8 +552,8 @@ const handleUpload = async (doc: DocumentControl) => {
 
                                             {/* ── Three Action Buttons ── */}
                                          {/* ── Three Action Buttons ── */}
+{/* View File — remove the ... placeholder */}
 <View style={styles.actionRow}>
-    {/* Select File */}
     <Pressable
         style={({ pressed }) => [
             styles.actionBtn,
@@ -528,17 +562,13 @@ const handleUpload = async (doc: DocumentControl) => {
             currentDoc.isDisabled && styles.actionBtnDisabled,
         ]}
         disabled={currentDoc.isDisabled}
-        onPress={() => handleSelectFile(currentDoc)}  // ← changed
+        onPress={() => handleSelectFile(currentDoc)}
     >
         <Text style={[styles.actionBtnText, currentDoc.isDisabled && styles.actionBtnTextDisabled]}>
             Select File
         </Text>
     </Pressable>
 
-    {/* View File — unchanged */}
-    ...
-
-    {/* Upload — update disabled logic */}
     <Pressable
         style={({ pressed }) => [
             styles.actionBtn,

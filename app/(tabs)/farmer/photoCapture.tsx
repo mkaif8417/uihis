@@ -236,62 +236,63 @@ export default function FarmerPhotoCapture() {
     return stopGPS;
   }, []);
 
-  if (!permission) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator
-          size="large"
-          color={COLORS.primary}
-        />
-      </View>
-    );
-  }
+// Coment this for no webcam at desktop
+  // if (!permission) {
+  //   return (
+  //     <View style={styles.center}>
+  //       <ActivityIndicator
+  //         size="large"
+  //         color={COLORS.primary}
+  //       />
+  //     </View>
+  //   );
+  // }
 
-  if (!permission.granted) {
-    return (
-      <View style={styles.center}>
-        <View style={styles.permissionCard}>
-          <Ionicons
-            name="camera-outline"
-            size={52}
-            color={COLORS.primary}
-          />
+  // if (!permission.granted) {
+  //   return (
+  //     <View style={styles.center}>
+  //       <View style={styles.permissionCard}>
+  //         <Ionicons
+  //           name="camera-outline"
+  //           size={52}
+  //           color={COLORS.primary}
+  //         />
 
-          <Text style={styles.permissionTitle}>
-            Camera Access Required
-          </Text>
+  //         <Text style={styles.permissionTitle}>
+  //           Camera Access Required
+  //         </Text>
 
-          <Text style={styles.permissionSub}>
-            Needed to capture geo-tagged field photos
-          </Text>
+  //         <Text style={styles.permissionSub}>
+  //           Needed to capture geo-tagged field photos
+  //         </Text>
 
-          <TouchableOpacity
-            style={styles.permissionButton}
-            onPress={requestPermission}
-          >
-            <Text
-              style={styles.permissionButtonText}
-            >
-              Grant Permission
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
+  //         <TouchableOpacity
+  //           style={styles.permissionButton}
+  //           onPress={requestPermission}
+  //         >
+  //           <Text
+  //             style={styles.permissionButtonText}
+  //           >
+  //             Grant Permission
+  //           </Text>
+  //         </TouchableOpacity>
+  //       </View>
+  //     </View>
+  //   );
+  // }
 
   const openCamera = async () => {
-    const permission =
-      await Location.requestForegroundPermissionsAsync();
+    // const permission =
+    //   await Location.requestForegroundPermissionsAsync();
 
-    if (!permission.granted) {
-      Alert.alert(
-        'Location Required',
-        'Enable location permission to continue.'
-      );
+    // if (!permission.granted) {
+    //   Alert.alert(
+    //     'Location Required',
+    //     'Enable location permission to continue.'
+    //   );
 
-      return;
-    }
+    //   return;
+    // }
 
     setCurrentPhoto(null);
     setLiveCoords(null);
@@ -833,7 +834,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Platform.OS === 'android' ? 18 : 24,
     left: 14,
-    right: 14,
+    right: 60,
 
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -888,8 +889,8 @@ const styles = StyleSheet.create({
   },
 
   closeCircle: {
-    width: 34,
-    height: 34,
+    width: 40,
+    height: 40,
     borderRadius: 999,
     justifyContent: 'center',
     alignItems: 'center',

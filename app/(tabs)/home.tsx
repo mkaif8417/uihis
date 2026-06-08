@@ -1,11 +1,10 @@
-import { Text } from "react-native";
-import ScreenLayout from "../../components/ScreenLayout";
-import FarmerServices from "../../components/FarmerServices";
+import TestHome from "@/components/RoleSelection";
 
 export default function Home() {
   return (
-    <ScreenLayout>
-      <FarmerServices/>
-    </ScreenLayout>
+    // <ScreenLayout>
+      <TestHome/>
+     
+    // </ScreenLayout>
   );
 }

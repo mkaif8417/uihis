@@ -3,6 +3,7 @@
     "name": "uihis-mobile",
     "slug": "uihis-mobile",
     "version": "1.0.0",
+     "assets": ["./assets/password_policy.pdf"],
     "orientation": "portrait",
     "scheme": "uihismobile",
     "userInterfaceStyle": "automatic",
@@ -36,7 +37,8 @@
         }
       ],
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,

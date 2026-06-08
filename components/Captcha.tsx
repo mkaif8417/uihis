@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { View } from "react-native";
 import Svg, { Line, Text as SvgText } from "react-native-svg";
 
@@ -32,7 +32,7 @@ export default function Captcha({ value }: Props) {
             y1={line.y1}
             x2={line.x2}
             y2={line.y2}
-            stroke="#2a40a1"
+            stroke="#5cb364"
             strokeWidth={1}
           /> 
         ))}

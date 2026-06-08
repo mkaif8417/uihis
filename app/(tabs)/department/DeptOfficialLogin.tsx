@@ -1,324 +1,597 @@
-import { useState } from "react";
+/**
+ * DeptOfficialLogin.tsx  —  Expo-compatible
+ *
+ * Dependencies (all Expo-managed):
+ *   expo install expo-asset expo-file-system expo-sharing
+ *   expo install @expo/vector-icons          ← usually pre-installed
+ *   npx expo install react-native-safe-area-context react-native-screens
+ *
+ * Redux + navigation wiring: restore the commented imports below
+ * and swap the TODO stubs once your project is wired up.
+ */
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Asset } from 'expo-asset';
+import * as Sharing from 'expo-sharing';
+import React, {
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import {
     ActivityIndicator,
+    Alert,
+    Animated,
+    Dimensions,
+    Image,
     KeyboardAvoidingView,
     Platform,
-    Pressable,
     ScrollView,
+    StatusBar,
     StyleSheet,
-    Switch,
     Text,
     TextInput,
+    TouchableOpacity,
     View,
-} from "react-native";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Captcha from '../../../components/Captcha';
+import { api } from '../../api/api';
 
-export default function DeptOfficialLogin() {
-  const [deptCode, setDeptCode] = useState("");
-  const [employeeId, setEmployeeId] = useState("");
-  const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+// ── Navigation / Redux (restore when wiring up) ──────────────────────────────
+// import { StackNavigationProp } from '@react-navigation/stack';
+// import { RouteProp } from '@react-navigation/native';
+// import { GuestStackParams } from '../../navigation/AuthStack';
+// import { useDispatch } from 'react-redux';
+// import { setOfficialSession } from '../../redux/authSlice';
+// import { AppDispatch } from '../../redux/store';
 
-  const handleSubmit = async () => {
-    if (!deptCode || !employeeId || !password) {
-      setError("All fields are required.");
-      return;
-    }
-    setError("");
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    setLoading(false);
-    setError("Invalid credentials. Please verify and try again.");
-  };
+// ─── Constants ────────────────────────────────────────────────────────────────
+const BLUE_DARK  = '#1A4971';
+const BLUE_MID   = '#2A6091';
+const BLUE_LIGHT = '#D6E8FA';
+const BLUE_TEXT  = '#0D2D45';
+const GREEN_BG   = '#8FAF8F';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+const TICKER_TEXT =
+  '  🔔  Logins are Blocked for Tech, District & Block Officers — Please contact your administrator.   |   🔔  Logins are Blocked for Tech, District & Block Officers — Please contact your administrator.   ';
+
+// ─── CAPTCHA Generator ────────────────────────────────────────────────────────
+const CAPTCHA_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function generateCaptcha(): string {
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += CAPTCHA_CHARS[Math.floor(Math.random() * CAPTCHA_CHARS.length)];
+  }
+  return result;
+}
+
+// ─── Props (restore generic when wiring navigation) ──────────────────────────
+type Props = {
+  navigation?: any; // StackNavigationProp<GuestStackParams, 'OfficialLogin'>
+  route?: any;      // RouteProp<GuestStackParams, 'OfficialLogin'>
+};
+
+// ─── Marquee Ticker ───────────────────────────────────────────────────────────
+function MarqueeTicker() {
+  const translateX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(translateX, {
+          toValue: -SCREEN_WIDTH * 6,
+          duration: 22000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateX, {
+          toValue: SCREEN_WIDTH,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [translateX]);
 
   return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.card}>
-
-          {/* Badge */}
-          <View style={styles.badge}>
-            <View style={styles.badgeIcon}>
-              <Text style={styles.badgeIconText}>🏛</Text>
-            </View>
-            <Text style={styles.badgeText}>DEPARTMENTAL PORTAL</Text>
-          </View>
-
-          {/* Title */}
-          <Text style={styles.title}>Official Sign In</Text>
-          <Text style={styles.subtitle}>Restricted access — authorised personnel only</Text>
-
-          {/* Dept Code + Employee ID */}
-          <Text style={styles.label}>DEPARTMENT ID</Text>
-          <View style={styles.row}>
-            <TextInput
-              style={[styles.input, { width: "35%" }]}
-              placeholder="DEPT"
-              placeholderTextColor="#444"
-              value={deptCode}
-              onChangeText={(v) => setDeptCode(v.toUpperCase())}
-              maxLength={6}
-              autoCapitalize="characters"
-            />
-            <TextInput
-              style={[styles.input, { flex: 1, marginLeft: 10 }]}
-              placeholder="Employee number"
-              placeholderTextColor="#444"
-              value={employeeId}
-              onChangeText={setEmployeeId}
-              keyboardType="numeric"
-            />
-          </View>
-
-          {/* Password */}
-          <Text style={styles.label}>PASSWORD</Text>
-          <View style={styles.passwordRow}>
-            <TextInput
-              style={[styles.input, { flex: 1 }]}
-              placeholder="••••••••••"
-              placeholderTextColor="#444"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              onSubmitEditing={handleSubmit}
-            />
-            <Pressable
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeBtn}
-            >
-              <Text style={styles.eyeText}>{showPassword ? "🙈" : "👁️"}</Text>
-            </Pressable>
-          </View>
-
-          {/* Error */}
-          {error !== "" && <Text style={styles.errorMsg}>{error}</Text>}
-
-          {/* Remember + Forgot */}
-          <View style={styles.optionsRow}>
-            <View style={styles.rememberRow}>
-              <Switch
-                value={remember}
-                onValueChange={setRemember}
-                trackColor={{ false: "#2a2a2a", true: "#b48c50" }}
-                thumbColor={remember ? "#e8c97a" : "#555"}
-                style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
-              />
-              <Text style={styles.rememberText}>Keep me signed in</Text>
-            </View>
-            <Pressable>
-              <Text style={styles.forgotText}>Forgot password?</Text>
-            </Pressable>
-          </View>
-
-          {/* Submit Button */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.btn,
-              pressed && styles.btnPressed,
-              loading && styles.btnDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#b48c50" />
-            ) : (
-              <Text style={styles.btnText}>SIGN IN</Text>
-            )}
-          </Pressable>
-
-          {/* Divider */}
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>SECURE ACCESS</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          {/* Footer */}
-          <Text style={styles.footerNote}>
-            This system is monitored. Unauthorised access attempts are logged and reported.
-          </Text>
-
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <View style={styles.tickerBar}>
+      <Animated.Text
+        style={[styles.tickerText, { transform: [{ translateX }] }]}
+        numberOfLines={1}
+      >
+        {TICKER_TEXT}
+      </Animated.Text>
+    </View>
   );
 }
 
+// ─── Fade-in helper (replaces react-native-animatable) ───────────────────────
+type FadeInProps = {
+  children: React.ReactNode;
+  delay?: number;
+  style?: object;
+};
+
+function FadeInView({ children, delay = 0, style }: FadeInProps) {
+  const opacity   = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(24)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 500,
+        delay,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 500,
+        delay,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [opacity, translateY, delay]);
+
+  return (
+    <Animated.View
+      style={[style, { opacity, transform: [{ translateY }] }]}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
+export default function DepartmentOfficialLoginScreen({ navigation }: Props) {
+  // const dispatch = useDispatch<AppDispatch>(); // ← restore with Redux
+
+  const [username,      setUsername]      = useState('');
+  const [password,      setPassword]      = useState('');
+  const [showPassword,  setShowPassword]  = useState(false);
+  const [captchaAnswer, setCaptchaAnswer] = useState('');
+  const [isLoading,     setIsLoading]     = useState(false);
+  const [captchaCode,   setCaptchaCode]   = useState<string>(generateCaptcha());
+
+  // ── Refresh CAPTCHA ───────────────────────────────────────────────────────
+  const handleRefreshCaptcha = useCallback(() => {
+    setCaptchaCode(generateCaptcha());
+    setCaptchaAnswer('');
+  }, []);
+
+  // ── Open PDF (Expo) ───────────────────────────────────────────────────────
+  /**
+   * Place password_policy.pdf in your project's /assets folder and
+   * register it in app.json:  "assets": ["./assets/password_policy.pdf"]
+   * Then replace the require() path below accordingly.
+   */
+  const handleOpenPdf = async () => {
+    try {
+      const [asset] = await Asset.loadAsync(
+       require('../../../assets/Password_Policy.pdf')
+      );
+      const localUri = asset.localUri ?? asset.uri;
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(localUri, { mimeType: 'application/pdf' });
+      } else {
+        Alert.alert('Info', 'Sharing is not available on this device.');
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Error', 'Unable to open PDF');
+    }
+  };
+
+  // ── Login ─────────────────────────────────────────────────────────────────
+const handleLogin = async () => {
+  if (!username.trim()) {
+    Alert.alert('Missing Field', 'Please enter your Email Address / Username.');
+    return;
+  }
+  if (!password.trim()) {
+    Alert.alert('Missing Field', 'Please enter your Password.');
+    return;
+  }
+  if (captchaAnswer.toUpperCase().trim() !== captchaCode) {
+    Alert.alert('Wrong CAPTCHA', 'Please enter the CAPTCHA correctly.');
+    handleRefreshCaptcha();
+    return;
+  }
+
+  setIsLoading(true);
+  try {
+    const response = await api.post(
+  '/UIHis/Login',
+  {
+    username: username.trim(),
+    password: password.trim(),
+  }
+);
+
+    const { data } = response;
+
+    if (data?.success) {
+      // dispatch(setOfficialSession({ ... })); // ← restore with Redux
+    } else {
+      Alert.alert('Login Failed', data?.message ?? 'Invalid credentials. Please try again.');
+      handleRefreshCaptcha();
+    }
+  } catch (error: any) {
+  console.log("ERROR => ", error);
+
+  if (error.response) {
+    console.log("Status:", error.response.status);
+    console.log("Headers:", error.response.headers);
+    console.log("Data:", error.response.data);
+  } else if (error.request) {
+    console.log("Request sent but no response:", error.request);
+  } else {
+    console.log("Message:", error.message);
+  }
+} finally {
+    setIsLoading(false);
+  }
+};
+
+  // ── UI ────────────────────────────────────────────────────────────────────
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor={BLUE_DARK} />
+
+      {/* ── HEADER IMAGE ── */}
+      <View style={styles.headerImageWrapper}>
+        <Image
+         source={require('../../../assets/images/header-banner.png')}
+          style={styles.headerImage}
+          resizeMode="stretch"
+        />
+      </View>
+
+      {/* ── MOVING TICKER ── */}
+      <MarqueeTicker />
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* 1️⃣ HERO HEADER */}
+          <FadeInView style={styles.header}>
+            <View style={styles.iconWrap}>
+              <MaterialIcons name="account-balance" size={36} color="#fff" />
+            </View>
+            <Text style={styles.headerTitle}>Department Official's Login</Text>
+          </FadeInView>
+
+          {/* 2️⃣ LOGIN CARD */}
+          <FadeInView style={styles.loginCard} delay={80}>
+            <Text style={styles.loginCardTitle}>Sign In</Text>
+            <View style={styles.formDivider} />
+
+            {/* Username */}
+            <Text style={styles.fieldLabel}>Username</Text>
+            <View style={styles.inputWrap}>
+              <MaterialIcons name="email" size={22} color={BLUE_MID} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your registered email"
+                placeholderTextColor="#A8BECC"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                returnKeyType="next"
+              />
+            </View>
+
+            {/* Password */}
+            <Text style={styles.fieldLabel}>Password</Text>
+            <View style={styles.inputWrap}>
+              <MaterialIcons name="lock" size={22} color={BLUE_MID} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your password"
+                placeholderTextColor="#A8BECC"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                returnKeyType="next"
+              />
+              <TouchableOpacity onPress={() => setShowPassword(p => !p)} activeOpacity={0.7}>
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={22}
+                  color={BLUE_MID}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* CAPTCHA */}
+            <Text style={styles.fieldLabel}>CAPTCHA Verification</Text>
+            <View style={styles.captchaRow}>
+              <Captcha value={captchaCode} />
+
+              <TouchableOpacity
+                style={styles.refreshBtn}
+                onPress={handleRefreshCaptcha}
+                activeOpacity={0.75}
+              >
+                <Ionicons name="refresh" size={22} color={BLUE_DARK} />
+              </TouchableOpacity>
+
+              <TextInput
+                style={styles.captchaInput}
+                placeholder="Type here"
+                placeholderTextColor="#A8BECC"
+                value={captchaAnswer}
+                onChangeText={setCaptchaAnswer}
+                autoCapitalize="characters"
+                maxLength={6}
+              />
+            </View>
+
+            {/* Login Button */}
+            <TouchableOpacity
+              style={[styles.primaryBtn, isLoading && styles.btnDisabled]}
+              onPress={handleLogin}
+              disabled={isLoading}
+              activeOpacity={0.85}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <View style={styles.btnInner}>
+                  <Text style={styles.primaryBtnText}>Login</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#fff" style={styles.btnIcon} />
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Password Policy PDF */}
+            <TouchableOpacity onPress={handleOpenPdf} activeOpacity={0.7} style={styles.noteWrap}>
+              <View style={styles.noteInner}>
+                <MaterialIcons name="picture-as-pdf" size={16} color="#CC0000" style={styles.noteIcon} />
+                <Text style={styles.noteText}>Note: Password Policy Document to create password</Text>
+              </View>
+            </TouchableOpacity>
+          </FadeInView>
+
+          {/* 3️⃣ INSTRUCTIONS CARD */}
+          <FadeInView style={styles.infoCard} delay={160}>
+            <Text style={styles.welcomeTitle}>WELCOME TO HARYANA</Text>
+            <View style={styles.divider} />
+
+            <Text style={styles.instructionsHeading}>Instructions for Department Users</Text>
+            <View style={styles.divider} />
+
+            <View style={styles.instructionsList}>
+              <View style={styles.instructionRow}>
+                <MaterialIcons name="looks-one" size={18} color="#1a1a1a" style={styles.bulletIcon} />
+                <Text style={styles.instructionItem}>
+                  Enter your Email Address while registering against Username.
+                </Text>
+              </View>
+              <View style={styles.instructionRow}>
+                <MaterialIcons name="looks-two" size={18} color="#1a1a1a" style={styles.bulletIcon} />
+                <Text style={styles.instructionItem}>
+                  Enter your Password created while registering against your Username.
+                </Text>
+              </View>
+              <View style={styles.instructionRow}>
+                <MaterialIcons name="looks-3" size={18} color="#1a1a1a" style={styles.bulletIcon} />
+                <Text style={styles.instructionItem}>
+                  If this is the first time, you are visiting this website, kindly click on
+                  {' '}"SHM New User? Register Here" to register.
+                </Text>
+              </View>
+            </View>
+          </FadeInView>
+
+          {/* ── FOOTER ── */}
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={styles.backRow}
+              onPress={() => navigation?.goBack()}
+            >
+              <Ionicons name="arrow-back" size={16} color="#fff" />
+              <Text style={styles.footerLink}>Back to Role Selection</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: "#0f1117",
+  safeArea: { flex: 1, backgroundColor: BLUE_DARK },
+  scroll:   { flexGrow: 1, paddingBottom: 40 },
+
+  // Header Image
+  headerImageWrapper: {
+    width: '95%',
+    alignSelf: 'center',
+    overflow: 'hidden',
+    borderRadius: 24,
+    marginTop: 2,
   },
-  scroll: {
-    flexGrow: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
+  headerImage: { width: '100%', height: 110 },
+
+  // Ticker
+  tickerBar: { backgroundColor: '#1a1a1a', paddingVertical: 7, overflow: 'hidden' },
+  tickerText: {
+    color: '#FFD700',
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    width: SCREEN_WIDTH * 6,
   },
-  card: {
-    width: "100%",
-    maxWidth: 420,
-    backgroundColor: "#16181f",
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.07)",
-    padding: 32,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.6,
-    shadowRadius: 40,
-    elevation: 20,
+
+  // Hero Header
+  header: {
+    backgroundColor: BLUE_DARK,
+    alignItems: 'center',
+    paddingTop: 5,
+    paddingBottom: 0,
+    paddingHorizontal: 24,
   },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 24,
+  iconWrap: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
   },
-  badgeIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 1.5,
-    borderColor: "rgba(180,140,80,0.6)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
+  headerTitle: { fontSize: 24, fontWeight: '900', color: '#fff', letterSpacing: 0.5 },
+
+  // Login Card
+  loginCard: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 22,
+    paddingTop: 28,
+    paddingBottom: 24,
+    marginTop: 0,
   },
-  badgeIconText: {
-    fontSize: 14,
+  loginCardTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: BLUE_TEXT,
+    textAlign: 'center',
+    marginBottom: 14,
+    letterSpacing: 0.8,
   },
-  badgeText: {
-    fontSize: 10,
-    letterSpacing: 2,
-    color: "rgba(180,140,80,0.7)",
-    fontWeight: "500",
-  },
-  title: {
-    fontSize: 24,
-    color: "#e8e4dc",
-    fontWeight: "600",
+  formDivider: { height: 1.5, backgroundColor: '#D0E4F0', marginBottom: 20 },
+
+  // Form
+  fieldLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: BLUE_TEXT,
     marginBottom: 6,
     letterSpacing: 0.3,
   },
-  subtitle: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.32)",
-    fontWeight: "300",
-    marginBottom: 28,
+  inputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F6FF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#B8D4E8',
+    paddingHorizontal: 12,
+    marginBottom: 18,
   },
-  label: {
-    fontSize: 10,
-    letterSpacing: 1.5,
-    color: "rgba(255,255,255,0.4)",
-    fontWeight: "500",
-    marginBottom: 8,
-    marginTop: 4,
+  inputIcon: { marginRight: 8 },
+  input: { flex: 1, fontSize: 15, color: '#1A1A1A', paddingVertical: 13 },
+
+  // CAPTCHA
+  captchaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 24 },
+
+
+  refreshBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#E8F4FD',
+    borderWidth: 1.5,
+    borderColor: '#7EB8D8',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.03)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-    borderRadius: 3,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    fontSize: 14,
-    color: "#e8e4dc",
-    fontWeight: "300",
+  captchaInput: {
+    width: 90,
+    backgroundColor: '#F0F6FF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#B8D4E8',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '800',
+    color: BLUE_TEXT,
+    paddingVertical: 13,
   },
-  row: {
-    flexDirection: "row",
+
+  // Button
+  primaryBtn: {
+    backgroundColor: BLUE_DARK,
+    borderRadius: 14,
+    paddingVertical: 15,
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: BLUE_DARK,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
     marginBottom: 16,
   },
-  passwordRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
+  btnDisabled:    { backgroundColor: '#7EB8D8', shadowOpacity: 0, elevation: 0 },
+  primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '800', letterSpacing: 0.5 },
+  btnInner:       { flexDirection: 'row', alignItems: 'center' },
+  btnIcon:        { marginLeft: 8 },
+
+  // PDF Note
+  noteWrap: { alignSelf: 'center' },
+  noteInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#CC0000',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  eyeBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 11,
+  noteIcon: { marginRight: 6 },
+  noteText: {
+    fontSize: 13,
+    color: '#CC0000',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
-  eyeText: {
-    fontSize: 16,
+
+  // Instructions Card
+  infoCard: {
+    backgroundColor: GREEN_BG,
+    paddingHorizontal: 22,
+    paddingTop: 24,
+    paddingBottom: 20,
+    marginTop: 12,
+    borderRadius: 16,
+    marginHorizontal: 10,
   },
-  errorMsg: {
-    fontSize: 12,
-    color: "rgba(220,100,80,0.85)",
-    marginBottom: 12,
-    fontWeight: "300",
+  welcomeTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#1a1a1a',
+    textAlign: 'center',
+    marginBottom: 14,
+    letterSpacing: 1,
   },
-  optionsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 24,
-    marginTop: 8,
+  divider: { height: 1.5, backgroundColor: '#5a7a5a', marginBottom: 14 },
+  instructionsHeading: { fontSize: 15, fontWeight: '800', color: '#1a1a1a', marginBottom: 10 },
+  instructionsList:    { marginBottom: 6 },
+  instructionRow:      { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10 },
+  bulletIcon:          { marginRight: 8, marginTop: 1 },
+  instructionItem:     { flex: 1, fontSize: 13, color: '#1a1a1a', lineHeight: 20 },
+
+  // Footer
+  footer: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 4,
   },
-  rememberRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  rememberText: {
-    fontSize: 12,
-    color: "rgba(255,255,255,0.35)",
-    fontWeight: "300",
-    marginLeft: 6,
-  },
-  forgotText: {
-    fontSize: 12,
-    color: "rgba(180,140,80,0.6)",
-    fontWeight: "300",
-  },
-  btn: {
-    backgroundColor: "rgba(180,140,80,0.12)",
-    borderWidth: 1,
-    borderColor: "rgba(180,140,80,0.35)",
-    borderRadius: 3,
-    paddingVertical: 13,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  btnPressed: {
-    backgroundColor: "rgba(180,140,80,0.22)",
-    borderColor: "rgba(180,140,80,0.6)",
-  },
-  btnDisabled: {
-    opacity: 0.4,
-  },
-  btnText: {
-    color: "rgba(180,140,80,0.9)",
-    fontSize: 12,
-    letterSpacing: 2,
-    fontWeight: "500",
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "rgba(255,255,255,0.06)",
-  },
-  dividerText: {
-    fontSize: 10,
-    letterSpacing: 1.5,
-    color: "rgba(255,255,255,0.2)",
-    marginHorizontal: 12,
-  },
-  footerNote: {
-    fontSize: 11,
-    color: "rgba(255,255,255,0.18)",
-    fontWeight: "300",
-    textAlign: "center",
-    lineHeight: 16,
-    letterSpacing: 0.3,
-  },
+  backRow:    { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  footerLink: { fontSize: 13, color: '#fff', fontWeight: '700' },
 });

@@ -159,6 +159,8 @@ export default function UploadDocs() {
                     `https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=${regNo}&kon=${KON}`
                     // https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=N243401010001&kon=34
                     //    https://localhost:7065/api/
+                    
+
 
                 );
                 if (!res.ok) throw new Error("Server error");
@@ -220,7 +222,7 @@ export default function UploadDocs() {
     }>>({});
 
     const uploadedCount = docs.filter(isUploaded).length;
-    const selectedCount = docs.filter(doc => selectedFiles[doc.fileId]).length;
+   const selectedCount = uploadedCount;
 
     const totalCount = docs.length;
 
@@ -589,7 +591,7 @@ if (pdfSize > MAX_FILE_SIZE) {
                             {totalCount > 0 && (
                                 <View style={styles.progressBadge}>
                                     <Text style={styles.progressBadgeText}>
-                                        {selectedCount}/{totalCount} selected
+                                          {uploadedCount}/{totalCount} uploaded
                                     </Text>
                                 </View>
                             )}

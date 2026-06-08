@@ -221,108 +221,36 @@ function FarmerLogin() {
         </ScreenLayout>
     );
 }
-
 const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        alignItems: "center",
-    },
+    container: { padding: 20, alignItems: "center" },
 
-    welcome: {
-        fontSize: 18,
-        fontWeight: "bold",
-        marginBottom: 10,
-        color: "#1b5e20",
-    },
+    welcome: { fontSize: 18, fontWeight: "bold", marginBottom: 10, color: "#1b5e20" },
 
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 10,
-    },
+    header: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
 
-    logo: {
-        width: 40,
-        height: 40,
-        marginRight: 8,
-    },
+    logo: { width: 40, height: 40, marginRight: 8 },
 
-    headerText: {
-        fontSize: 18,
-        fontWeight: "bold",
-    },
+    headerText: { fontSize: 18, fontWeight: "bold" },
 
-    divider: {
-        width: "100%",
-        borderBottomWidth: 1,
-        borderBottomColor: "#999",
-        marginVertical: 10,
-    },
+    divider: { width: "100%", borderBottomWidth: 1, borderBottomColor: "#999", marginVertical: 10 },
 
-    input: {
-        width: "100%",
-        backgroundColor: "#ffffff",
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 6,
-        padding: 12,
-        marginVertical: 6,
-        fontSize: 14,
-    },
+    input: { width: "100%", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 12, marginVertical: 6, fontSize: 14 },
 
-    warning: {
-        fontSize: 12,
-        color: "red",
-        marginVertical: 6,
-    },
+    warning: { fontSize: 12, color: "red", marginVertical: 6 },
 
-    primaryBtn: {
-        width: "100%",
-        backgroundColor: "#2e7d32",
-        paddingVertical: 12,
-        borderRadius: 6,
-        alignItems: "center",
-        marginVertical: 8,
-    },
+    primaryBtn: { width: "100%", backgroundColor: "#2e7d32", paddingVertical: 12, borderRadius: 6, alignItems: "center", marginVertical: 8 },
 
-    btnText: {
-        color: "#ffffff",
-        fontWeight: "bold",
-        fontSize: 15,
-    },
+    btnText: { color: "#ffffff", fontWeight: "bold", fontSize: 15 },
 
-    otpInfo: {
-        paddingBottom: 25,
-        fontSize: 12,
-        color: "red",
-        marginVertical: 6,
-    },
+    otpInfo: { paddingBottom: 25, fontSize: 12, color: "red", marginVertical: 6 },
 
-    errorText: {
-        color: "red",
-        fontSize: 13,
-        marginTop: 6,
-    },
+    errorText: { color: "red", fontSize: 13, marginTop: 6 },
 
-    captchaWrapper: {
-        flexDirection: "row",
-        alignItems: "center",
-        width: '100%',
-        height: 20,
-        marginVertical: 10,
-    },
+    captchaWrapper: { flexDirection: "row", alignItems: "center", width: "100%", height: 20, marginVertical: 10 },
 
-    reloadBtn: {
-        marginLeft: 10,
-        padding: 20,
-        backgroundColor: "#c8e6c9",
-        borderRadius: 6,
-    },
+    reloadBtn: { marginLeft: 10, padding: 20, backgroundColor: "#c8e6c9", borderRadius: 6 },
 
-    reloadText: {
-        fontSize: 18,
-        fontWeight: "bold",
-    },
+    reloadText: { fontSize: 18, fontWeight: "bold" },
 });
 
 export default FarmerLogin;

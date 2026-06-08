@@ -1,20 +1,22 @@
-import Footer from "@/components/Footer";
+// import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import useFarmer from "@/components/context/FarmerContext";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
+    ActivityIndicator, Alert,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+// imports for preview of files
+import * as WebBrowser from "expo-web-browser";
+import { Image, Modal } from "react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,6 +48,10 @@ type DocsResponse = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const KON = "34";
+
+
+
+
 
 function getSchemeLabel(compn: string): string {
     if (compn.startsWith("NHM") || compn.startsWith("56")) return "NHM (MIDH)";
@@ -92,6 +98,14 @@ export default function UploadDocs() {
     const [errorDocs, setErrorDocs] = useState("");
 
     const currentDoc = docs.length > 0 ? docs[selectedDocIndex] : null;
+    // preview modal state start
+    const [previewVisible, setPreviewVisible] = useState(false);
+    const [previewFile, setPreviewFile] = useState<{ uri: string; mimeType?: string } | null>(null);
+    // preview modal state end
+    //Uploading all docs start
+    const [uploadingAll, setUploadingAll] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState<Record<string, 'pending' | 'uploading' | 'done' | 'error'>>({});
+    //Uploading all docs end
 
     // ── Reset doc index whenever the docs list changes ────────────────────────
     useEffect(() => {
@@ -217,66 +231,197 @@ export default function UploadDocs() {
     const missingDocs = docs.filter(
         doc => !isUploaded(doc) && !selectedFiles[doc.fileId]
     );
+ 
+
     // ---------------------------------------bkc
+const getFileSize = async (uri: string): Promise<number> => {
+    try {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        return blob.size;
+    } catch {
+        return 0;
+    }
+};
 
-    const handleSelectFile = async (doc: DocumentControl) => {
-        const isImage = doc.type1?.toLowerCase().includes("image");
+const MAX_FILE_SIZE =1048576; // 1 MB 1048576
 
-        if (isImage) {
-            // Image picker for image-type docs
-            const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (!permission.granted) {
-                Alert.alert("Permission Denied", "Allow access to your gallery to select images.");
-                return;
-            }
+const handleSelectFile = async (doc: DocumentControl) => {
+    const isImage = doc.type1?.toLowerCase().includes("image");
 
-            const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ['images'],
-                allowsEditing: false,
-                quality: 0.8,
-            });
-            if (!result.canceled && result.assets[0]) {
-                const asset = result.assets[0];
-                // Check size (500 KB = 512000 bytes)
-                if (asset.fileSize && asset.fileSize > 512000) {
-                    Alert.alert("File Too Large ❌",
-                        `${asset.fileName} is ${((asset.fileSize) / 1024).toFixed(0)} KB.\nMaximum allowed size is 500 KB.`);
-                    return;
+    if (isImage) {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+            Alert.alert("Permission Denied", "Allow access to your gallery to select images.");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: false,
+            quality: 0.8,
+        });
+
+        if (result.canceled || !result.assets[0]) return;
+
+        const asset = result.assets[0];
+        console.log("Asset:", asset);
+console.log("File Size:", asset.fileSize);
+console.log("URI:", asset.uri);
+
+        let imageSize = asset.fileSize ?? 0;
+        if (imageSize === 0) {
+            imageSize = await getFileSize(asset.uri);  // ← blob fallback, works on web + native
+        }
+
+        console.log("Image size bytes:", imageSize);
+
+if (imageSize > MAX_FILE_SIZE) {
+    const message =
+        `Selected image is ${(imageSize / 1024 / 1024).toFixed(2)} MB.\nMaximum allowed size is 1 MB.`;
+
+    Alert.alert("File Too Large", message);
+    return;
+}
+
+        setSelectedFiles((prev) => ({
+            ...prev,
+            [doc.fileId]: {
+                uri: asset.uri,
+                name: asset.fileName ?? `image_${doc.fileId}.jpg`,
+                mimeType: asset.mimeType ?? "image/jpeg",
+                size: imageSize,
+            },
+        }));
+
+    } else {
+        const result = await DocumentPicker.getDocumentAsync({
+            type: "application/pdf",
+            copyToCacheDirectory: true,
+        });
+
+        if (result.canceled || !result.assets[0]) return;
+
+        const asset = result.assets[0];
+
+        let pdfSize = asset.size ?? 0;
+        if (pdfSize === 0) {
+            pdfSize = await getFileSize(asset.uri);  // ← blob fallback, works on web + native
+        }
+
+        console.log("PDF size bytes:", pdfSize);
+console.log("PDF size bytes:", pdfSize);
+if (pdfSize > MAX_FILE_SIZE) {
+    const message =
+        `${asset.name} is ${(pdfSize / 1024 / 1024).toFixed(2)} MB.\nMaximum allowed size is 1 MB.`;
+
+    Alert.alert("File Too Large", message);
+    return;
+}
+        setSelectedFiles((prev) => ({
+            ...prev,
+            [doc.fileId]: {
+                uri: asset.uri,
+                name: asset.name,
+                mimeType: asset.mimeType ?? "application/pdf",
+                size: pdfSize,
+            },
+        }));
+    }
+};
+
+// ✅ this closes handleSelectFile
+    const handleUploadAll = async () => {
+        // Safety check — should not reach here if button is disabled
+        if (missingDocs.length > 0) {
+            Alert.alert(
+                "Missing Files ❌",
+                `Please select files for:\n${missingDocs.map(d => `• ${d.document_name.trim()}`).join("\n")}`
+            );
+            return;
+        }
+
+        setUploadingAll(true);
+
+        // Only upload docs that are NOT already uploaded to server
+        const docsToUpload = docs.filter(doc => !isUploaded(doc) && selectedFiles[doc.fileId]);
+
+        let successCount = 0;
+        let failedDocs: string[] = [];
+
+        for (const doc of docsToUpload) {
+            const file = selectedFiles[doc.fileId];
+
+            // Mark this doc as uploading
+            setUploadProgress(prev => ({ ...prev, [doc.fileId]: 'uploading' }));
+
+            try {
+                const formData = new FormData();
+                formData.append("file", {
+                    uri: file.uri,
+                    name: file.name,
+                    type: file.mimeType ?? "application/octet-stream",
+                } as any);
+                formData.append("fileId", doc.fileId);
+                formData.append("BenRegNo", selectedComp!.appl_reg_no);
+                formData.append("kon", KON);
+                formData.append("comp", selectedComp!.comp);
+
+                const res = await fetch(
+                    "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/YOUR_UPLOAD_ENDPOINT",
+                    // replace with your actual endpoint ↑
+                    {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            "Authorization": "Bearer YOUR_TOKEN_HERE",
+                            // Do NOT set Content-Type manually — fetch sets it with boundary automatically for FormData
+                        },
+                    }
+                );
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error(`Upload failed for ${doc.document_name}:`, errorText);
+                    throw new Error(`Server error: ${res.status}`);
                 }
-                setSelectedFiles((prev) => ({
-                    ...prev,
-                    [doc.fileId]: {
-                        uri: asset.uri,
-                        name: asset.fileName ?? `image_${doc.fileId}.jpg`,
-                        mimeType: asset.mimeType ?? "image/jpeg",
-                        size: asset.fileSize,
-                    },
-                }));
+
+                // Optional: read server response
+                // const result = await res.json();
+                // console.log("Upload result:", result);
+
+                setUploadProgress(prev => ({ ...prev, [doc.fileId]: 'done' }));
+                successCount++;
+
+            } catch (err) {
+                console.error(`Failed to upload ${doc.document_name}:`, err);
+                setUploadProgress(prev => ({ ...prev, [doc.fileId]: 'error' }));
+                failedDocs.push(doc.document_name.trim());
             }
+        }
+
+        setUploadingAll(false);
+
+        // Show result summary
+        if (failedDocs.length === 0) {
+            Alert.alert(
+                "Upload Complete ✅",
+                `All ${successCount} document(s) uploaded successfully!`,
+                [{
+                    text: "OK", onPress: () => {
+                        // Refresh the docs list from server
+                        fetchDocs(selectedComp!);
+                        // Clear selected files
+                        setSelectedFiles({});
+                        setUploadProgress({});
+                    }
+                }]
+            );
         } else {
-            // Document picker for PDF-type docs
-            const result = await DocumentPicker.getDocumentAsync({
-                type: "application/pdf",
-                copyToCacheDirectory: true,
-            });
-            if (!result.canceled && result.assets[0]) {
-                const asset = result.assets[0];
-                // Check size (500 KB = 512000 bytes)
-                if (asset.size && asset.size > 512000) {
-                    Alert.alert("File Too Large ❌",
-                        `${asset.name} is ${((asset.size) / 1024).toFixed(0)} KB.\nMaximum allowed size is 500 KB.`);
-                    return;
-                }
-                setSelectedFiles((prev) => ({
-                    ...prev,
-                    [doc.fileId]: {
-                        uri: asset.uri,
-                        name: asset.name,
-                        mimeType: asset.mimeType ?? "application/pdf",
-                        size: asset.size,
-                    },
-                }));
-            }
+            Alert.alert(
+                "Partial Upload ⚠️",
+                `${successCount} uploaded successfully.\n\nFailed:\n${failedDocs.map(d => `• ${d}`).join("\n")}\n\nPlease retry the failed ones.`
+            );
         }
     };
     // -------------------------bkc
@@ -294,41 +439,47 @@ export default function UploadDocs() {
         console.log("====================");
 
         Alert.alert("Upload Ready ✅", "Waiting for upload API from senior.");
-
-
-        //     const formData = new FormData();
-        //     formData.append("file", {
-        //         uri: file.uri,
-        //         name: file.name,
-        //         type: file.mimeType ?? "application/octet-stream",
-        //     } as any);
-        //     formData.append("fileId", doc.fileId);
-        //     formData.append("BenRegNo", selectedComp!.appl_reg_no);
-        //     formData.append("kon", KON);
-
-        //     try {
-        //         const res = await fetch("YOUR_UPLOAD_API_URL_HERE", {
-        //             method: "POST",
-        //             body: formData,
-        //             headers: { "Content-Type": "multipart/form-data" },
-        //         });
-        //         if (!res.ok) throw new Error("Upload failed");
-        //         Alert.alert("Success", `${doc.document_name.trim()} uploaded successfully!`);
-        //         // Clear selected file after upload
-        //         setSelectedFiles((prev) => {
-        //             const updated = { ...prev };
-        //             delete updated[doc.fileId];
-        //             return updated;
-        //         });
-        //         // Refresh docs
-        //         fetchDocs(selectedComp!);
-        //     } catch {
-        //         Alert.alert("Upload Failed", "Please try again.");
-        //     }
     };
+    const handlePreview = async (doc: DocumentControl) => {
+        const file = selectedFiles[doc.fileId];
+        if (!file) return;
+
+        const isImage = doc.type1?.toLowerCase().includes("image") ||
+            file.mimeType?.startsWith("image/");
+
+        if (isImage) {
+            // Show image in a modal
+            setPreviewFile({ uri: file.uri, mimeType: file.mimeType });
+            setPreviewVisible(true);
+        } else {
+            // Open PDF using WebBrowser (opens in device browser/PDF viewer)
+            await WebBrowser.openBrowserAsync(file.uri);
+        }
+    };
+
     return (
         <SafeAreaView style={styles.safeArea}>
             <Header />
+            {/* ── Image Preview Modal ── */}
+            <Modal
+                visible={previewVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setPreviewVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <Pressable style={styles.modalClose} onPress={() => setPreviewVisible(false)}>
+                        <Text style={styles.modalCloseText}>✕  Close</Text>
+                    </Pressable>
+                    {previewFile && (
+                        <Image
+                            source={{ uri: previewFile.uri }}
+                            style={styles.modalImage}
+                            resizeMode="contain"
+                        />
+                    )}
+                </View>
+            </Modal>
             <ScrollView contentContainerStyle={styles.container}>
 
                 {/* ── Title Bar ── */}
@@ -552,7 +703,7 @@ export default function UploadDocs() {
                                             <View style={styles.docMetaRow}>
                                                 <View style={styles.fileTypeBadge}>
                                                     <Text style={styles.fileTypeBadgeText}>
-                                                        {currentDoc.type1?.toLowerCase().includes("image") ? "📷 Image" : "📄 PDF"} · max 500 KB
+                                                      {currentDoc.type1?.toLowerCase().includes("image") ? "📷 Image" : "📄 PDF"} · max 1 MB
                                                     </Text>
                                                 </View>
                                                 {isUploaded(currentDoc) && (
@@ -592,6 +743,22 @@ export default function UploadDocs() {
                                                 >
                                                     <Text style={[styles.actionBtnText, currentDoc.isDisabled && styles.actionBtnTextDisabled]}>
                                                         Select File
+                                                    </Text>
+                                                </Pressable>
+
+                                                {/* ── NEW: Preview Button ── */}
+                                                <Pressable
+                                                    style={({ pressed }) => [
+                                                        styles.actionBtn,
+                                                        styles.previewBtn,
+                                                        pressed && { opacity: 0.8 },
+                                                        !selectedFiles[currentDoc.fileId] && styles.actionBtnDisabled,
+                                                    ]}
+                                                    disabled={!selectedFiles[currentDoc.fileId]}
+                                                    onPress={() => handlePreview(currentDoc)}
+                                                >
+                                                    <Text style={[styles.actionBtnText, !selectedFiles[currentDoc.fileId] && styles.actionBtnTextDisabled]}>
+                                                        Preview 👁
                                                     </Text>
                                                 </Pressable>
 
@@ -686,41 +853,58 @@ export default function UploadDocs() {
                                     Document {selectedDocIndex + 1} of {docs.length}
                                 </Text>
 
+
                                 {/* ── Upload All Files ── */}
                                 <Pressable
                                     style={({ pressed }) => [
                                         styles.uploadAllBtn,
-                                        !allDocsHaveFiles && styles.actionBtnDisabled,
-                                        pressed && allDocsHaveFiles && { opacity: 0.85 },
+                                        (!allDocsHaveFiles || uploadingAll) && styles.actionBtnDisabled,
+                                        pressed && allDocsHaveFiles && !uploadingAll && { opacity: 0.85 },
                                     ]}
-                                    disabled={!allDocsHaveFiles}
-                                    onPress={() => {
-                                        if (missingDocs.length > 0) {
-                                            Alert.alert(
-                                                "Missing Files ❌",
-                                                `Please select files for:\n${missingDocs.map(d => `• ${d.document_name.trim()}`).join("\n")}`
-                                            );
-                                        } else {
-                                            Alert.alert(
-                                                "All Files Ready ✅",
-                                                "All documents selected. Waiting for upload API from senior."
-                                            );
-                                        }
-                                    }}
+                                    disabled={!allDocsHaveFiles || uploadingAll}
+                                    onPress={handleUploadAll}
                                 >
-                                    <Text style={[
-                                        styles.uploadAllBtnText,
-                                        !allDocsHaveFiles && { color: "#eeeeee" }
-                                    ]}>
-                                        Upload All Files
-                                    </Text>
+                                    {uploadingAll ? (
+                                        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                                            <ActivityIndicator color="#fff" size="small" />
+                                            <Text style={styles.uploadAllBtnText}>Uploading...</Text>
+                                        </View>
+                                    ) : (
+                                        <Text style={[
+                                            styles.uploadAllBtnText,
+                                            !allDocsHaveFiles && { color: "#eeeeee" }
+                                        ]}>
+                                            Upload All Files
+                                        </Text>
+                                    )}
                                 </Pressable>
+
+                                {/* ── Per-doc upload progress indicators ── */}
+                                {uploadingAll && (
+                                    <View style={styles.progressList}>
+                                        {docs.filter(doc => !isUploaded(doc)).map(doc => {
+                                            const status = uploadProgress[doc.fileId];
+                                            const icon =
+                                                status === 'uploading' ? '⏳' :
+                                                    status === 'done' ? '✅' :
+                                                        status === 'error' ? '❌' : '🔘';
+                                            return (
+                                                <View key={doc.fileId} style={styles.progressItem}>
+                                                    <Text style={styles.progressIcon}>{icon}</Text>
+                                                    <Text style={styles.progressDocName} numberOfLines={1}>
+                                                        {doc.document_name.trim()}
+                                                    </Text>
+                                                </View>
+                                            );
+                                        })}
+                                    </View>
+                                )}
                             </>
                         )}
                     </View>
                 )}
 
-                <Footer />
+                {/* <Footer /> */}
             </ScrollView>
         </SafeAreaView>
     );
@@ -853,5 +1037,56 @@ const styles = StyleSheet.create({
     selectedFileSize: {
         fontSize: 11,
         color: "#757575",
+    },
+    // Preview button
+    previewBtn: { backgroundColor: "#1565c0" },
+
+    // Image preview modal
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.92)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    modalClose: {
+        position: "absolute",
+        top: 50,
+        right: 20,
+        backgroundColor: "rgba(255,255,255,0.15)",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        zIndex: 10,
+    },
+    modalCloseText: {
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: 14,
+    },
+    modalImage: {
+        width: "95%",
+        height: "80%",
+    },
+    progressList: {
+        backgroundColor: "#fff",
+        borderRadius: 8,
+        padding: 12,
+        marginTop: 8,
+        marginBottom: 12,
+        elevation: 1,
+        gap: 8,
+    },
+    progressItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+    },
+    progressIcon: {
+        fontSize: 14,
+    },
+    progressDocName: {
+        fontSize: 12,
+        color: "#424242",
+        flex: 1,
     },
 });

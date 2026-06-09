@@ -7,7 +7,7 @@ type Props = {
 };
 
 export default function Captcha({ value }: Props) {
-  const width = 260;
+  const width = 160;
   const height = 80;
 
   const randomLines = useMemo(

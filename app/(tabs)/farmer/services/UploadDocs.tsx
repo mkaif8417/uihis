@@ -370,8 +370,8 @@ if (pdfSize > MAX_FILE_SIZE) {
                 formData.append("comp", selectedComp!.comp);
 
                 const res = await fetch(
-                    "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/YOUR_UPLOAD_ENDPOINT",
-                    // replace with your actual endpoint ↑
+                    //    "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/Hos_Scheme_Scandocs_others_Upload_uploadAllDocumentsll"
+                    "Hos_Scheme_Scandocs_others_Upload_uploadAllDocumentsllhttps://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_uploadAllDocumentsll",
                     {
                         method: "POST",
                         body: formData,

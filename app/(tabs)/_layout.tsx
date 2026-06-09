@@ -27,8 +27,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ href: null }} />
-      <Tabs.Screen name="department/DeptOfficialLogin" options={{ href: null }} />
-
+      
       <Tabs.Screen
         name="home"
         options={{

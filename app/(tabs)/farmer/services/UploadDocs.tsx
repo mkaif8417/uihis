@@ -158,7 +158,6 @@ export default function UploadDocs() {
                     // `https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=${regNo}&kon=${KON}`
                     `https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=${regNo}&kon=${KON}`
                     // https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_PL?BenRegNo=N243401010001&kon=34
-                    //    https://localhost:7065/api/
                     
 
 
@@ -219,6 +218,7 @@ export default function UploadDocs() {
         name: string;
         mimeType?: string;
         size?: number;
+        rawFile?: File;
     }>>({});
 
     const uploadedCount = docs.filter(isUploaded).length;
@@ -258,174 +258,198 @@ const handleSelectFile = async (doc: DocumentControl) => {
             return;
         }
 
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: false,
-            quality: 0.8,
-        });
+      const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['images'],
+    allowsEditing: false,
+    quality: 0.8,
+});
 
-        if (result.canceled || !result.assets[0]) return;
+if (result.canceled || !result.assets[0]) return;
+const asset = result.assets[0];
 
-        const asset = result.assets[0];
-        console.log("Asset:", asset);
-console.log("File Size:", asset.fileSize);
-console.log("URI:", asset.uri);
-
-        let imageSize = asset.fileSize ?? 0;
-        if (imageSize === 0) {
-            imageSize = await getFileSize(asset.uri);  // ← blob fallback, works on web + native
-        }
-
-        console.log("Image size bytes:", imageSize);
+// ✅ On Expo Web, asset.file is the real browser File object
+const rawFile = (asset as any).file as File | undefined;
+const imageSize = rawFile?.size ?? asset.fileSize ?? 0;
 
 if (imageSize > MAX_FILE_SIZE) {
-    const message =
-        `Selected image is ${(imageSize / 1024 / 1024).toFixed(2)} MB.\nMaximum allowed size is 1 MB.`;
-
-    Alert.alert("File Too Large", message);
+    Alert.alert("File Too Large",
+        `Selected image is ${(imageSize / 1024 / 1024).toFixed(2)} MB.\nMaximum allowed size is 1 MB.`
+    );
     return;
 }
 
-        setSelectedFiles((prev) => ({
-            ...prev,
-            [doc.fileId]: {
-                uri: asset.uri,
-                name: asset.fileName ?? `image_${doc.fileId}.jpg`,
-                mimeType: asset.mimeType ?? "image/jpeg",
-                size: imageSize,
-            },
-        }));
+setSelectedFiles(prev => ({
+    ...prev,
+    [doc.fileId]: {
+        uri: asset.uri,
+        name: asset.fileName ?? `image_${doc.fileId}.jpg`,
+        mimeType: asset.mimeType ?? "image/jpeg",
+        size: imageSize,
+        rawFile,   // ← STORE IT
+    },
+}));
 
     } else {
-        const result = await DocumentPicker.getDocumentAsync({
-            type: "application/pdf",
-            copyToCacheDirectory: true,
-        });
+       const result = await DocumentPicker.getDocumentAsync({
+    type: "application/pdf",
+    copyToCacheDirectory: true,
+});
 
-        if (result.canceled || !result.assets[0]) return;
+if (result.canceled || !result.assets[0]) return;
+const asset = result.assets[0];
 
-        const asset = result.assets[0];
+// ✅ On Expo Web, asset.file is the real browser File object
+const rawFile = (asset as any).file as File | undefined;
+const pdfSize = rawFile?.size ?? asset.size ?? 0;
 
-        let pdfSize = asset.size ?? 0;
-        if (pdfSize === 0) {
-            pdfSize = await getFileSize(asset.uri);  // ← blob fallback, works on web + native
-        }
-
-        console.log("PDF size bytes:", pdfSize);
-console.log("PDF size bytes:", pdfSize);
 if (pdfSize > MAX_FILE_SIZE) {
-    const message =
-        `${asset.name} is ${(pdfSize / 1024 / 1024).toFixed(2)} MB.\nMaximum allowed size is 1 MB.`;
-
-    Alert.alert("File Too Large", message);
+    Alert.alert("File Too Large",
+        `${asset.name} is ${(pdfSize / 1024 / 1024).toFixed(2)} MB.\nMaximum allowed size is 1 MB.`
+    );
     return;
 }
-        setSelectedFiles((prev) => ({
-            ...prev,
-            [doc.fileId]: {
-                uri: asset.uri,
-                name: asset.name,
-                mimeType: asset.mimeType ?? "application/pdf",
-                size: pdfSize,
-            },
-        }));
+
+setSelectedFiles(prev => ({
+    ...prev,
+    [doc.fileId]: {
+        uri: asset.uri,
+        name: asset.name,
+        mimeType: asset.mimeType ?? "application/pdf",
+        size: pdfSize,
+        rawFile,   // ← STORE IT
+    },
+}));
     }
 };
 
 // ✅ this closes handleSelectFile
-    const handleUploadAll = async () => {
-        // Safety check — should not reach here if button is disabled
-        if (missingDocs.length > 0) {
-            Alert.alert(
-                "Missing Files ❌",
-                `Please select files for:\n${missingDocs.map(d => `• ${d.document_name.trim()}`).join("\n")}`
-            );
-            return;
-        }
+const handleUploadAll = async () => {
+    if (missingDocs.length > 0) {
+        Alert.alert(
+            "Missing Files ❌",
+            `Please select files for:\n${missingDocs.map(d => `• ${d.document_name.trim()}`).join("\n")}`
+        );
+        return;
+    }
 
-        setUploadingAll(true);
+    // Get IP
+    let ipAddress = "0.0.0.0";
+    try {
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const ipData = await ipRes.json();
+        ipAddress = ipData.ip ?? "0.0.0.0";
+    } catch { }
 
-        // Only upload docs that are NOT already uploaded to server
-        const docsToUpload = docs.filter(doc => !isUploaded(doc) && selectedFiles[doc.fileId]);
+    setUploadingAll(true);
 
-        let successCount = 0;
-        let failedDocs: string[] = [];
+    const docsToUpload = docs.filter(doc => !isUploaded(doc) && selectedFiles[doc.fileId]);
 
-        for (const doc of docsToUpload) {
-            const file = selectedFiles[doc.fileId];
+    let successCount = 0;
+    let failedDocs: string[] = [];
 
-            // Mark this doc as uploading
-            setUploadProgress(prev => ({ ...prev, [doc.fileId]: 'uploading' }));
+    for (const doc of docsToUpload) {
+        const file = selectedFiles[doc.fileId];
+        setUploadProgress(prev => ({ ...prev, [doc.fileId]: 'uploading' }));
 
-            try {
-                const formData = new FormData();
-                formData.append("file", {
-                    uri: file.uri,
-                    name: file.name,
-                    type: file.mimeType ?? "application/octet-stream",
-                } as any);
-                formData.append("fileId", doc.fileId);
-                formData.append("BenRegNo", selectedComp!.appl_reg_no);
-                formData.append("kon", KON);
-                formData.append("comp", selectedComp!.comp);
-
-                const res = await fetch(
-                    //    "https://hortnet.hortharyana.gov.in/UIHortHar-API/api/UIHis/Hos_Scheme_Scandocs_others_Upload_uploadAllDocumentsll"
-                    "Hos_Scheme_Scandocs_others_Upload_uploadAllDocumentsllhttps://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_uploadAllDocumentsll",
-                    {
-                        method: "POST",
-                        body: formData,
-                        headers: {
-                            "Authorization": "Bearer YOUR_TOKEN_HERE",
-                            // Do NOT set Content-Type manually — fetch sets it with boundary automatically for FormData
-                        },
-                    }
-                );
-
-                if (!res.ok) {
-                    const errorText = await res.text();
-                    console.error(`Upload failed for ${doc.document_name}:`, errorText);
-                    throw new Error(`Server error: ${res.status}`);
-                }
-
-                // Optional: read server response
-                // const result = await res.json();
-                // console.log("Upload result:", result);
-
-                setUploadProgress(prev => ({ ...prev, [doc.fileId]: 'done' }));
-                successCount++;
-
-            } catch (err) {
-                console.error(`Failed to upload ${doc.document_name}:`, err);
-                setUploadProgress(prev => ({ ...prev, [doc.fileId]: 'error' }));
-                failedDocs.push(doc.document_name.trim());
+        try {
+            // ✅ CRITICAL: use rawFile (real browser File object), NOT blob: URI
+            if (!file.rawFile) {
+                throw new Error("No raw file available — please re-select the file.");
             }
-        }
 
-        setUploadingAll(false);
+            const formData = new FormData();
+            formData.append("files", file.rawFile, file.name);  // ✅ real File object
+            formData.append("fileIds",   doc.fileId);
+            formData.append("regno",     selectedComp!.appl_reg_no);
+            formData.append("statecd",   KON);
+            formData.append("dcomp",     selectedComp!.comp);
+            formData.append("kon",       KON);
+            formData.append("latitude",  doc.gpslat  ?? "0");
+            formData.append("longitude", doc.gpslong ?? "0");
+            formData.append("ipaddress", ipAddress);
 
-        // Show result summary
-        if (failedDocs.length === 0) {
-            Alert.alert(
-                "Upload Complete ✅",
-                `All ${successCount} document(s) uploaded successfully!`,
-                [{
-                    text: "OK", onPress: () => {
-                        // Refresh the docs list from server
-                        fetchDocs(selectedComp!);
-                        // Clear selected files
-                        setSelectedFiles({});
-                        setUploadProgress({});
-                    }
-                }]
-            );
-        } else {
-            Alert.alert(
-                "Partial Upload ⚠️",
-                `${successCount} uploaded successfully.\n\nFailed:\n${failedDocs.map(d => `• ${d}`).join("\n")}\n\nPlease retry the failed ones.`
-            );
+            // ✅ Log actual file size to confirm it's real
+            console.log(`Uploading: ${file.name}, size: ${file.rawFile.size} bytes`);
+
+  const res = await fetch("https://localhost:7065/api/UIHis/Hos_Scheme_Scandocs_others_Upload_uploadAllDocumentsll", {
+  method: "POST",
+  body: formData,
+});
+
+const result = await res.json().catch(() => ({}));
+
+const message =
+  result?.message ||
+  result?.Message ||
+  "";
+
+console.log("Status:", res.status);
+console.log("Response:", result);
+
+if (res.ok) {
+  setUploadProgress(prev => ({
+    ...prev,
+    [doc.fileId]: "done",
+  }));
+
+  successCount++;
+  continue;
+}
+
+// Temporary compatibility with existing ASP.NET API
+const uploadSucceeded =
+  typeof message === "string" &&
+  (
+    message.toLowerCase().includes("upload sucess") ||
+    message.toLowerCase().includes("upload success")
+  );
+
+if (uploadSucceeded) {
+  console.warn(
+    "API returned error status but success message:",
+    message
+  );
+
+  setUploadProgress(prev => ({
+    ...prev,
+    [doc.fileId]: "done",
+  }));
+
+  successCount++;
+  continue;
+}
+
+throw new Error(message || `Server error: ${res.status}`);
+
+
+        } catch (err) {
+            console.error(`Failed to upload ${doc.document_name}:`, err);
+            setUploadProgress(prev => ({ ...prev, [doc.fileId]: 'error' }));
+            failedDocs.push(doc.document_name.trim());
         }
-    };
+    }
+
+    setUploadingAll(false);
+
+    if (failedDocs.length === 0) {
+        Alert.alert(
+            "Upload Complete ✅",
+            `All ${successCount} document(s) uploaded successfully!`,
+            [{
+                text: "OK", onPress: () => {
+                    fetchDocs(selectedComp!);
+                    setSelectedFiles({});
+                    setUploadProgress({});
+                }
+            }]
+        );
+    } else {
+        Alert.alert(
+            "Partial Upload ⚠️",
+            `${successCount} uploaded.\n\nFailed:\n${failedDocs.map(d => `• ${d}`).join("\n")}`
+        );
+    }
+};
     // -------------------------bkc
     const handleUpload = async (doc: DocumentControl) => {
         const file = selectedFiles[doc.fileId];

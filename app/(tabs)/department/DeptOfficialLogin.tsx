@@ -15,10 +15,10 @@
  *   npm install crypto-js
  *   npm install --save-dev @types/crypto-js
  */
-
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import CryptoJS from 'crypto-js';
 import { Asset } from 'expo-asset';
+import Constants from 'expo-constants';
 import * as Sharing from 'expo-sharing';
 import React, {
   useCallback,
@@ -52,8 +52,10 @@ import Captcha from '../../../components/Captcha';
 // import { AppDispatch } from '../../redux/store';
 
 //
-const SECRET_KEY = 'YOUR_SECRET_KEY_HERE';
-const SECRET_IV  = 'YOUR_SECRET_IV_HERE'; 
+const SECRET_KEY    = Constants.expoConfig?.extra?.secretKey ?? '';
+const SECRET_IV     = Constants.expoConfig?.extra?.secretIv  ?? '';
+const LOGIN_API_URL = Constants.expoConfig?.extra?.apiUrl    ?? '';
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -64,7 +66,6 @@ const GREEN_BG   = '#8FAF8F';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const LOGIN_API_URL = 'https://localhost:7065/api/UIHis/Login';
 
 const TICKER_TEXT =
   '  🔔  Logins are Blocked for Tech, District & Block Officers — Please contact your administrator.   |   🔔  Logins are Blocked for Tech, District & Block Officers — Please contact your administrator.   ';
@@ -210,7 +211,7 @@ export default function DepartmentOfficialLoginScreen({ navigation }: Props) {
 
       const encryptedData = encryptData(credentials);
       console.log('Sending encryptedData =>', encryptedData.slice(0, 30) + '...');
-
+console.log("LOGIN_API_URL =", LOGIN_API_URL);
       const response = await fetch(LOGIN_API_URL, {
         method: 'POST',
         headers: {

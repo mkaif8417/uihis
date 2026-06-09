@@ -51,9 +51,9 @@ import Captcha from '../../../components/Captcha';
 // import { setOfficialSession } from '../../redux/authSlice';
 // import { AppDispatch } from '../../redux/store';
 
-// ─── ⚠️  REPLACE THESE TWO VALUES ────────────────────────────────────────────
-const SECRET_KEY = 'YOUR_SECRET_KEY_HERE'; // e.g. 'A1B2C3D4E5F6G7H8'
-const SECRET_IV  = 'YOUR_SECRET_IV_HERE';  // e.g. 'H8G7F6E5D4C3B2A1'
+//
+const SECRET_KEY = 'YOUR_SECRET_KEY_HERE';
+const SECRET_IV  = 'YOUR_SECRET_IV_HERE'; 
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── Constants ────────────────────────────────────────────────────────────────

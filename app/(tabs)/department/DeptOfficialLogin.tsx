@@ -1,24 +1,11 @@
 /**
  * DeptOfficialLogin.tsx  —  Expo-compatible
  *
- * Login API: POST https://localhost:7065/api/UIHis/Login
- *
- * Payload:  { encryptedData: string }   ← AES-CBC encrypted JSON
- * Response: { encryptedData: string }   ← AES-CBC encrypted JSON (decrypted on success)
- *
- * ⚠️  Replace the two placeholders below with values from your Angular project:
- *      src/environments/environment.ts → secretKey / secretIv
- *
- * Dependencies:
- *   npx expo install expo-asset expo-sharing @expo/vector-icons
- *   npx expo install react-native-safe-area-context react-native-screens
- *   npm install crypto-js
- *   npm install --save-dev @types/crypto-js
+ * This component is now lean — all crypto, HTTP, and payload
+ * construction lives in services/api.ts and utils/crypto.ts.
  */
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import CryptoJS from 'crypto-js';
 import { Asset } from 'expo-asset';
-import Constants from 'expo-constants';
 import * as Sharing from 'expo-sharing';
 import React, {
   useCallback,
@@ -43,20 +30,14 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { loginDepartmentOfficial } from '../../../api/api';
 import Captcha from '../../../components/Captcha';
 
-// ── Navigation / Redux (restore when wiring up) ──────────────────────────────
+// ─── Navigation / Redux (restore when wiring up) ──────────────────────────────
 // import { StackNavigationProp } from '@react-navigation/stack';
 // import { useDispatch } from 'react-redux';
 // import { setOfficialSession } from '../../redux/authSlice';
 // import { AppDispatch } from '../../redux/store';
-
-//
-const SECRET_KEY    = Constants.expoConfig?.extra?.secretKey ?? '';
-const SECRET_IV     = Constants.expoConfig?.extra?.secretIv  ?? '';
-const LOGIN_API_URL = Constants.expoConfig?.extra?.apiUrl    ?? '';
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const BLUE_DARK  = '#1A4971';
@@ -66,31 +47,8 @@ const GREEN_BG   = '#8FAF8F';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-
 const TICKER_TEXT =
   '  🔔  Logins are Blocked for Tech, District & Block Officers — Please contact your administrator.   |   🔔  Logins are Blocked for Tech, District & Block Officers — Please contact your administrator.   ';
-
-// ─── AES-CBC Helpers (mirrors your Angular encryptData / decryptData) ─────────
-function encryptData(data: any): string {
-  const key = CryptoJS.enc.Utf8.parse(SECRET_KEY);
-  const iv  = CryptoJS.enc.Utf8.parse(SECRET_IV);
-  return CryptoJS.AES.encrypt(JSON.stringify(data), key, {
-    iv,
-    mode:    CryptoJS.mode.CBC,
-    padding: CryptoJS.pad.Pkcs7,
-  }).toString();
-}
-
-function decryptData(cipherText: string): any {
-  const key   = CryptoJS.enc.Utf8.parse(SECRET_KEY);
-  const iv    = CryptoJS.enc.Utf8.parse(SECRET_IV);
-  const bytes = CryptoJS.AES.decrypt(cipherText, key, {
-    iv,
-    mode:    CryptoJS.mode.CBC,
-    padding: CryptoJS.pad.Pkcs7,
-  });
-  return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-}
 
 // ─── CAPTCHA Generator ────────────────────────────────────────────────────────
 const CAPTCHA_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -160,6 +118,7 @@ export default function DepartmentOfficialLoginScreen({ navigation }: Props) {
   const [captchaAnswer, setCaptchaAnswer] = useState('');
   const [isLoading,     setIsLoading]     = useState(false);
   const [captchaCode,   setCaptchaCode]   = useState<string>(generateCaptcha());
+  const [loginAttempt,  setLoginAttempt]  = useState(1);
 
   // ── Refresh CAPTCHA ───────────────────────────────────────────────────────
   const handleRefreshCaptcha = useCallback(() => {
@@ -203,56 +162,21 @@ export default function DepartmentOfficialLoginScreen({ navigation }: Props) {
     setIsLoading(true);
 
     try {
-      // ── Build & encrypt payload (same structure as Angular Credentials) ──
-      const credentials = {
-        username: username.trim(),
-        password: password.trim(),
-      };
-
-      const encryptedData = encryptData(credentials);
-      console.log('Sending encryptedData =>', encryptedData.slice(0, 30) + '...');
-console.log("LOGIN_API_URL =", LOGIN_API_URL);
-      const response = await fetch(LOGIN_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({ encryptedData }),
+      // ── All payload building, encryption, and HTTP is inside api.ts ──────
+      const data = await loginDepartmentOfficial({
+        username,
+        password,
+        attempt: loginAttempt,
       });
 
-      // ── Handle non-2xx HTTP ──────────────────────────────────────────────
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log('HTTP Error:', response.status, errorText);
-        Alert.alert('Login Failed', `Server error ${response.status}. Please try again.`);
-        handleRefreshCaptcha();
-        return;
-      }
-
-      const responseJson = await response.json();
-      console.log('Raw response =>', responseJson);
-
-      // ── Decrypt the response (mirrors Angular map operator) ──────────────
-      let data: any;
-      try {
-        data = decryptData(responseJson.encryptedData);
-        console.log('Decrypted response =>', data);
-      } catch (decryptError) {
-        console.log('Decryption failed =>', decryptError);
-        Alert.alert('Error', 'Failed to read server response. Please try again.');
-        handleRefreshCaptcha();
-        return;
-      }
-
-      // ── Check login result ───────────────────────────────────────────────
-      if (
+      const isSuccess =
         data?.success === true  ||
         data?.Success === true  ||
         data?.status  === 'success' ||
-        data?.Status  === 'success'
-      ) {
-        // dispatch(setOfficialSession({ token: data.token, user: data.user }));
+        data?.Status  === 'success';
+
+      if (isSuccess) {
+        // dispatch(setOfficialSession({ token: data.token, user: data }));
         Alert.alert(
           'Login Successful',
           `Welcome, ${data?.userName ?? data?.UserName ?? username}!`,
@@ -265,17 +189,19 @@ console.log("LOGIN_API_URL =", LOGIN_API_URL);
           data?.errorMessage ??
           data?.ErrorMessage ??
           'Invalid credentials. Please try again.';
-        Alert.alert('Login Failed', msg);
+        Alert.alert('Login Failed', String(msg));
+        setLoginAttempt(n => n + 1);
         handleRefreshCaptcha();
       }
 
     } catch (error: any) {
       console.log('Login error =>', error);
+      setLoginAttempt(n => n + 1);
 
       if (error?.message?.includes('Network request failed')) {
         Alert.alert('Network Error', 'Unable to reach the server. Check your connection and try again.');
       } else {
-        Alert.alert('Error', error?.message ?? 'Something went wrong. Please try again.');
+        Alert.alert('Login Failed', error?.message ?? 'Something went wrong. Please try again.');
       }
 
       handleRefreshCaptcha();

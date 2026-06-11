@@ -1,0 +1,36 @@
+encryptData(data: any): string {
+    const key = enc.Utf8.parse(environment.secretKey);
+    const iv = enc.Utf8.parse(environment.secretIv);
+
+    return AES.encrypt(JSON.stringify(data), key, {
+      iv: iv,
+      mode: mode.CBC,
+      padding: pad.PKCS7
+    }).toString();
+  }
+
+  decryptData(cipherText: string): any {
+    ;
+    const key = enc.Utf8.parse(environment.secretKey);
+    const iv = enc.Utf8.parse(environment.secretIv);
+
+    const bytes = AES.decrypt(cipherText, key, {
+      iv: iv,
+      mode: mode.CBC,
+      padding: pad.PKCS7
+    });
+
+    return JSON.parse(bytes.toString(enc.Utf8));
+  }
+
+  Login(body: Credentials): Observable<any> {
+    const url = `${this.Rest_API_SERVER}UIHis/Login`;
+    const encryptedBody = this.encryptData(body);
+
+    return this.http.post<any>(url, { encryptedData: encryptedBody }).pipe(
+      map(response => {
+        return this.decryptData(response.encryptedData);
+      }),
+      catchError((error) => this.handleError(error))
+    );
+  }

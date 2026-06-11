@@ -65,8 +65,9 @@ export interface LoginResponse {
  * Mirror whatever your Angular project does before sending the password.
  */
 function hashPassword(plaintext: string, rawSalt: string): string {
-  const dbPassword = CryptoJS.SHA256(plaintext).toString(CryptoJS.enc.Hex);
-  return CryptoJS.SHA256(dbPassword + rawSalt).toString(CryptoJS.enc.Hex);
+  const hashPass = CryptoJS.SHA256(plaintext).toString(CryptoJS.enc.Hex);
+  const hashSalt = CryptoJS.SHA256(rawSalt).toString(CryptoJS.enc.Hex);
+  return CryptoJS.SHA256(hashPass + hashSalt).toString(CryptoJS.enc.Hex);
 }
 /**
  * Generic encrypted POST helper.
@@ -128,19 +129,38 @@ export interface LoginArgs {
  *
  * Throws an Error with a human-readable message on failure.
  */
-export async function loginDepartmentOfficial(
-  args: LoginArgs,
-): Promise<LoginResponse> {
- const rawSalt = String(Date.now()).slice(-10);
+// TEMP DEBUG — remove before production
+export async function loginDepartmentOfficial(args: LoginArgs): Promise<LoginResponse> {
+  const rawSalt = String(Date.now()).slice(-10);
 
 const payload: LoginPayload = {
   username:   args.username.trim(),
   password:   hashPassword(args.password.trim(), rawSalt),
-  hiddensalt: rawSalt,   // ← raw number, NOT hashed
+  hiddensalt: CryptoJS.SHA256(rawSalt).toString(CryptoJS.enc.Hex), // ← hashed
   kon:        args.kon ?? '34',
   ipadd:      '0.0.0.0',
   attempt:    args.attempt ?? 1,
   systemId:   args.systemId ?? 'MOBILE_APP',
 };
+
+  // ── DEBUG START ──────────────────────────────────────────────────
+  const key = process.env.EXPO_PUBLIC_SECRET_KEY ?? '';
+  const iv  = process.env.EXPO_PUBLIC_SECRET_IV  ?? '';
+  console.log('[DEBUG] KEY length:', key.length, '| IV length:', iv.length);
+  console.log('[DEBUG] KEY:', key);   // remove after confirming
+  console.log('[DEBUG] payload (plain):', JSON.stringify(payload, null, 2));
+
+  // Test round-trip
+  const { encryptData, decryptData } = require('../utils/crypto');
+  const encrypted = encryptData(payload);
+  console.log('[DEBUG] encrypted sample (first 60):', encrypted.slice(0, 60));
+  try {
+    const roundTrip = decryptData(encrypted);
+    console.log('[DEBUG] round-trip OK:', JSON.stringify(roundTrip));
+  } catch (e) {
+    console.error('[DEBUG] round-trip FAILED:', e);
+  }
+  // ── DEBUG END ────────────────────────────────────────────────────
+
   return encryptedPost<LoginPayload, LoginResponse>('/api/UIHis/Login', payload);
 }

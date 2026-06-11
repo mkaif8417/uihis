@@ -159,7 +159,7 @@ export default function DepartmentOfficialLoginScreen({ navigation }: Props) {
       return;
     }
 
-    setIsLoading(true);
+    setIsLoading(true);  
 
     try {
       // ── All payload building, encryption, and HTTP is inside api.ts ──────

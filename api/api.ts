@@ -65,11 +65,9 @@ export interface LoginResponse {
  * Mirror whatever your Angular project does before sending the password.
  */
 function hashPassword(plaintext: string, rawSalt: string): string {
-  const shacd = CryptoJS.SHA256(plaintext).toString(CryptoJS.enc.Hex) 
-              + CryptoJS.SHA256(rawSalt).toString(CryptoJS.enc.Hex);
-  return CryptoJS.SHA256(shacd).toString(CryptoJS.enc.Hex);
+  const dbPassword = CryptoJS.SHA256(plaintext).toString(CryptoJS.enc.Hex);
+  return CryptoJS.SHA256(dbPassword + rawSalt).toString(CryptoJS.enc.Hex);
 }
-
 /**
  * Generic encrypted POST helper.
  * Encrypts `body`, POSTs to `endpoint`, decrypts and returns the response.
@@ -133,17 +131,16 @@ export interface LoginArgs {
 export async function loginDepartmentOfficial(
   args: LoginArgs,
 ): Promise<LoginResponse> {
-  const rawSalt = String(Date.now()).slice(-10);
+ const rawSalt = String(Date.now()).slice(-10);
 
 const payload: LoginPayload = {
   username:   args.username.trim(),
   password:   hashPassword(args.password.trim(), rawSalt),
-  hiddensalt: rawSalt,   // ← raw number are , not hashed (maxim  10 charsrts )
+  hiddensalt: rawSalt,   // ← raw number, NOT hashed
   kon:        args.kon ?? '34',
   ipadd:      '0.0.0.0',
   attempt:    args.attempt ?? 1,
   systemId:   args.systemId ?? 'MOBILE_APP',
 };
-
   return encryptedPost<LoginPayload, LoginResponse>('/api/UIHis/Login', payload);
 }
